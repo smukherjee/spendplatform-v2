@@ -1,18 +1,24 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext.tsx';
+import { useAuth } from '../contexts/AuthContext';
+import { usePermission } from '../services/permissions';
 
 interface ProtectedRouteProps {
   children: any;
-  requiredRoles?: string[];
+  requiredRoles?: string[]; // Keep for backward compatibility
+  screenRoute?: string; // New screen-based permission
 }
 
-export default function ProtectedRoute({ children, requiredRoles = [] }: ProtectedRouteProps) {
+export default function ProtectedRoute({ children, requiredRoles = [], screenRoute }: ProtectedRouteProps) {
   const { isAuthenticated, isLoading, user } = useAuth();
   const location = useLocation();
+  
+  // Use screen-based permission if provided, otherwise fall back to current route
+  const routeToCheck = screenRoute || location.pathname;
+  const { hasAccess, loading: isCheckingPermission } = usePermission(routeToCheck);
 
-  // Show loading while checking authentication
-  if (isLoading) {
+  // Show loading while checking authentication or permissions
+  if (isLoading || isCheckingPermission) {
     return (
       <div style={{
         display: 'flex',
@@ -42,8 +48,49 @@ export default function ProtectedRoute({ children, requiredRoles = [] }: Protect
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Check role-based access if required
-  if (requiredRoles.length > 0 && user) {
+  // Check screen-based permissions first (preferred method)
+  if (hasAccess === false) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        fontFamily: 'system-ui, -apple-system, sans-serif',
+        textAlign: 'center',
+        padding: '2rem'
+      }}>
+        <div>
+          <h2 style={{ color: '#dc3545', marginBottom: '1rem' }}>Access Denied</h2>
+          <p style={{ color: '#666', marginBottom: '1.5rem' }}>
+            You don't have permission to access this screen.
+          </p>
+          <p style={{ fontSize: '0.9rem', color: '#999' }}>
+            Screen: {routeToCheck}
+            <br />
+            Your role: {user?.role}
+          </p>
+          <button
+            onClick={() => window.history.back()}
+            style={{
+              marginTop: '1rem',
+              padding: '0.5rem 1rem',
+              backgroundColor: '#007bff',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Fallback to role-based access for backward compatibility
+  if (requiredRoles.length > 0 && hasAccess === null && user) {
     const hasRequiredRole = requiredRoles.includes(user.role);
     if (!hasRequiredRole) {
       return (

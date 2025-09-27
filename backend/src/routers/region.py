@@ -46,7 +46,7 @@ def post_regions(region: RegionCreate, role: str = Depends(get_current_role), cl
     
     return db_region
 
-@router.get("/{id}", response_model=RegionRead, summary="Get a region by ID")
+@router.get("/{id}", response_model=RegionRead, summary="Get a specific region")
 def get_region(id: int, role: str = Depends(get_current_role), client_id: int = Depends(get_client_id), db: Session = Depends(get_db)):
     """Returns a region by ID, filtered by client if not superadmin."""
     log_audit(action="get_region", user=role, client_id=client_id, details=f"Get region id: {id}")

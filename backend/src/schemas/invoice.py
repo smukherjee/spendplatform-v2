@@ -14,5 +14,4 @@ class InvoiceCreate(InvoiceBase):
 
 class InvoiceRead(InvoiceBase):
     id: int
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}

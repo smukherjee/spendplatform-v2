@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchCurrencies, createCurrency, deleteCurrency } from '../services/apiEntities.ts';
+import { fetchCurrencies, createCurrency, deleteCurrency } from '../services/apiEntities';
 
 export default function Currency() {
   const [currencies, setCurrencies] = useState<any[]>([]);

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchClients, createClient, deleteClient } from '../services/apiEntities.ts';
+import { fetchClients, createClient, deleteClient } from '../services/apiEntities';
 
 export default function Clients() {
   const [clients, setClients] = useState<any[]>([]);

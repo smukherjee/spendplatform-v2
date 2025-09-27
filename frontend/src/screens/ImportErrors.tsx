@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchImportErrors, createImportError, deleteImportError } from '../services/apiEntities.ts';
+import { fetchImportErrors, createImportError, deleteImportError } from '../services/apiEntities';
 
 export default function ImportErrors() {
   const [errors, setErrors] = useState<any[]>([]);

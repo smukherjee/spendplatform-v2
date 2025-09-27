@@ -1,14 +1,86 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext.tsx';
+import { useAuth } from '../contexts/AuthContext';
+import { useMultiplePermissions } from '../services/permissions';
 
 export default function NavBar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
+  // Check permissions for all navigation screens - memoized to prevent infinite re-renders
+  const screens = useMemo(() => [
+    '/dashboard',
+    '/invoices', 
+    '/suppliers',
+    '/business-units',
+    '/regions',
+    '/roles',
+    '/users',
+    '/clients',
+    '/subcategories',
+    '/unit-of-measure',
+    '/currency',
+    '/import-errors',
+    '/reporting',
+    '/client-settings',
+    '/settings',
+    '/screen-permissions'
+  ], []);
+  
+  // Create a user key that changes when user changes (triggers permission re-fetch)
+  const userKey = useMemo(() => 
+    user ? `${user.user_id}-${user.role}-${user.client_id}` : 'no-user', 
+    [user?.user_id, user?.role, user?.client_id]
+  );
+  
+  const { permissions, loading } = useMultiplePermissions(screens, userKey);
+
+  // Debug logging for permissions and user changes (can be removed in production)
+  React.useEffect(() => {
+    console.log('NavBar: User changed, userKey:', userKey);
+    console.log('NavBar: Current user:', user);
+    if (user) {
+      console.log(`NavBar: Permissions will be fetched for ${user.role} (${user.username})`);
+    }
+  }, [userKey, user]);
+
+  React.useEffect(() => {
+    if (!loading) {
+      console.log('Navigation permissions loaded:', Object.fromEntries(permissions));
+      console.log('User role:', user?.role);
+    }
+  }, [loading, permissions, user?.role]);
+
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  // Helper function to check if user has access to a screen
+  const hasAccess = (screen: string) => {
+    // If permissions are still loading, show only essential navigation based on role
+    if (loading) {
+      // Always show dashboard
+      if (screen === '/dashboard') return true;
+      
+      // Show basic screens for all roles
+      if (screen === '/invoices' || screen === '/suppliers') return true;
+      
+      // Show admin screens only for admin roles
+      if (user?.role === 'superadmin') {
+        return ['/clients', '/roles', '/users', '/screen-permissions', '/settings'].includes(screen);
+      }
+      
+      if (user?.role === 'client_admin') {
+        return ['/users', '/roles', '/client-settings', '/reporting'].includes(screen);
+      }
+      
+      // For regular users, show limited access
+      return false;
+    }
+    
+    // Use actual permissions when loaded
+    return permissions.get(screen) === true;
   };
 
   return (
@@ -20,41 +92,161 @@ export default function NavBar() {
       justifyContent: 'space-between',
       alignItems: 'center'
     }}>
-      <div>
-        <Link to="/dashboard">Dashboard</Link> |{' '}
-        <Link to="/invoices">Invoices</Link> |{' '}
-        <Link to="/suppliers">Suppliers</Link> |{' '}
-        <Link to="/business-units">Business Units</Link> |{' '}
-        <Link to="/regions">Regions</Link> |{' '}
-        {user && (user.role === 'client_admin' || user.role === 'superadmin') && (
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem' }}>
+        {loading && (
+          <span style={{ color: '#666', fontSize: '0.8rem', marginRight: '1rem' }}>
+            Loading menu...
+          </span>
+        )}
+
+        {/* Core Operations */}
+        {hasAccess('/dashboard') && (
           <>
-            <Link to="/roles">Roles</Link> |{' '}
-            <Link to="/users">Users</Link> |{' '}
+            <Link to="/dashboard" style={{ fontWeight: 'bold' }}>Dashboard</Link>
+            <span style={{ color: '#ccc' }}>|</span>
           </>
         )}
-        {user && user.role === 'superadmin' && (
+        
+        {hasAccess('/invoices') && (
           <>
-            <Link to="/clients">Clients</Link> |{' '}
+            <Link to="/invoices">Invoices</Link>
+            <span style={{ color: '#ccc' }}>|</span>
           </>
         )}
-        <Link to="/subcategories">Subcategories</Link> |{' '}
-        <Link to="/unit-of-measure">Unit Of Measure</Link> |{' '}
-        <Link to="/currency">Currency</Link> |{' '}
-        <Link to="/import-errors">Import Errors</Link> |{' '}
-        <Link to="/reporting">Reporting</Link> |{' '}
-        {user && (user.role === 'client_admin' || user.role === 'superadmin') && (
+        
+        {hasAccess('/suppliers') && (
           <>
-            <Link to="/client-settings">Client Settings</Link> |{' '}
+            <Link to="/suppliers">Suppliers</Link>
+            <span style={{ color: '#ccc' }}>|</span>
           </>
         )}
-        <Link to="/settings">Settings</Link>
+
+        {/* Organization & Structure */}
+        {(hasAccess('/business-units') || hasAccess('/regions')) && (
+          <>
+            {hasAccess('/business-units') && (
+              <>
+                <Link to="/business-units">Business Units</Link>
+                <span style={{ color: '#ccc' }}>|</span>
+              </>
+            )}
+            
+            {hasAccess('/regions') && (
+              <>
+                <Link to="/regions">Regions</Link>
+                <span style={{ color: '#ccc' }}>|</span>
+              </>
+            )}
+          </>
+        )}
+
+        {/* Master Data */}
+        {(hasAccess('/subcategories') || hasAccess('/unit-of-measure') || hasAccess('/currency')) && (
+          <>
+            {hasAccess('/subcategories') && (
+              <>
+                <Link to="/subcategories">Categories</Link>
+                <span style={{ color: '#ccc' }}>|</span>
+              </>
+            )}
+            
+            {hasAccess('/unit-of-measure') && (
+              <>
+                <Link to="/unit-of-measure">Units</Link>
+                <span style={{ color: '#ccc' }}>|</span>
+              </>
+            )}
+            
+            {hasAccess('/currency') && (
+              <>
+                <Link to="/currency">Currency</Link>
+                <span style={{ color: '#ccc' }}>|</span>
+              </>
+            )}
+          </>
+        )}
+
+        {/* User & Access Management */}
+        {(hasAccess('/users') || hasAccess('/roles') || hasAccess('/clients')) && (
+          <>
+            {hasAccess('/users') && (
+              <>
+                <Link to="/users">Users</Link>
+                <span style={{ color: '#ccc' }}>|</span>
+              </>
+            )}
+            
+            {hasAccess('/roles') && (
+              <>
+                <Link to="/roles">Roles</Link>
+                <span style={{ color: '#ccc' }}>|</span>
+              </>
+            )}
+            
+            {hasAccess('/clients') && (
+              <>
+                <Link to="/clients">Clients</Link>
+                <span style={{ color: '#ccc' }}>|</span>
+              </>
+            )}
+          </>
+        )}
+
+        {/* Reports & Analytics */}
+        {hasAccess('/reporting') && (
+          <>
+            <Link to="/reporting">Reports</Link>
+            <span style={{ color: '#ccc' }}>|</span>
+          </>
+        )}
+
+        {/* System & Admin */}
+        {(hasAccess('/import-errors') || hasAccess('/client-settings') || hasAccess('/settings') || hasAccess('/screen-permissions')) && (
+          <>
+            {hasAccess('/import-errors') && (
+              <>
+                <Link to="/import-errors">Import Errors</Link>
+                <span style={{ color: '#ccc' }}>|</span>
+              </>
+            )}
+            
+            {hasAccess('/client-settings') && (
+              <>
+                <Link to="/client-settings">Client Settings</Link>
+                <span style={{ color: '#ccc' }}>|</span>
+              </>
+            )}
+            
+            {hasAccess('/settings') && (
+              <>
+                <Link to="/settings">Settings</Link>
+                <span style={{ color: '#ccc' }}>|</span>
+              </>
+            )}
+            
+            {hasAccess('/screen-permissions') && (
+              <Link to="/screen-permissions">Permissions</Link>
+            )}
+          </>
+        )}
       </div>
       
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
         {user && (
-          <span style={{ fontSize: '0.9rem', color: '#666' }}>
-            Welcome, {user.username} ({user.role})
-          </span>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: '0.9rem', color: '#333' }}>
+              {user.username}
+            </div>
+            <div style={{ 
+              fontSize: '0.75rem', 
+              color: user.role === 'superadmin' ? '#e74c3c' : 
+                     user.role === 'client_admin' ? '#f39c12' : '#2ecc71',
+              fontWeight: 'bold'
+            }}>
+              {user.role.replace('_', ' ').toUpperCase()}
+              {loading && ' (Loading...)'}
+            </div>
+          </div>
         )}
         <button 
           onClick={handleLogout}
@@ -65,8 +257,11 @@ export default function NavBar() {
             border: 'none',
             borderRadius: '4px',
             cursor: 'pointer',
-            fontSize: '0.9rem'
+            fontSize: '0.9rem',
+            transition: 'background-color 0.2s'
           }}
+          onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#c82333'}
+          onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#dc3545'}
         >
           Logout
         </button>

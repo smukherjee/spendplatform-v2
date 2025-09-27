@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional, List
 
 class RoleBase(BaseModel):
@@ -10,6 +10,4 @@ class RoleCreate(RoleBase):
 
 class RoleRead(RoleBase):
     id: int
-    users: List[int] = []
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

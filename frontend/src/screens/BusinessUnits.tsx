@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchBusinessUnits, createBusinessUnit, deleteBusinessUnit } from '../services/apiEntities.ts';
+import { fetchBusinessUnits, createBusinessUnit, deleteBusinessUnit } from '../services/apiEntities';
 
 export default function BusinessUnits() {
   const [units, setUnits] = useState<any[]>([]);

@@ -3,7 +3,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from utils import verify_password, get_password_hash, create_access_token, get_current_role, not_implemented
+from utils import verify_password, get_password_hash, create_access_token, get_current_role
 from fastapi import FastAPI
 from database import get_db
 # Import all models to ensure relationships are initialized
@@ -25,13 +25,15 @@ from routers.currency import router as currency_router
 from routers.client_settings import router as client_settings_router
 from routers.reporting import router as reporting_router
 from routers.audit import router as audit_router
+from routers.import_errors import router as import_errors_router
+from routers.screen_permissions import router as screen_permissions_router
 
 app = FastAPI()
 
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3001", "http://127.0.0.1:3001"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -51,6 +53,8 @@ app.include_router(currency_router)
 app.include_router(client_settings_router)
 app.include_router(reporting_router)
 app.include_router(audit_router)
+app.include_router(import_errors_router)
+app.include_router(screen_permissions_router)
 
 # Register /token route on the correct app instance
 @app.post("/token", summary="OAuth2 login and JWT token generation")

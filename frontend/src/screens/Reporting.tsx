@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchReports, createReport, deleteReport } from '../services/apiEntities.ts';
+import { fetchReports, createReport, deleteReport } from '../services/apiEntities';
 
 export default function Reporting() {
   const [reports, setReports] = useState<any[]>([]);

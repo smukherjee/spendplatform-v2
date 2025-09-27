@@ -1,43 +1,44 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import Dashboard from './screens/Dashboard.tsx';
-import LoginScreen from './screens/LoginScreen.tsx';
-import ProtectedRoute from './components/ProtectedRoute.tsx';
-import { useAuth } from './contexts/AuthContext.tsx';
-import Invoices from './screens/Invoices.tsx';
-import InvoiceDetail from './screens/InvoiceDetail.tsx';
-import InvoiceEdit from './screens/InvoiceEdit.tsx';
-import Suppliers from './screens/Suppliers.tsx';
-import SupplierDetail from './screens/SupplierDetail.tsx';
-import SupplierEdit from './screens/SupplierEdit.tsx';
-import BusinessUnits from './screens/BusinessUnits.tsx';
-import BusinessUnitDetail from './screens/BusinessUnitDetail.tsx';
-import BusinessUnitEdit from './screens/BusinessUnitEdit.tsx';
-import Regions from './screens/Regions.tsx';
-import RegionDetail from './screens/RegionDetail.tsx';
-import RegionEdit from './screens/RegionEdit.tsx';
-import Roles from './screens/Roles.tsx';
-import RoleDetail from './screens/RoleDetail.tsx';
-import RoleEdit from './screens/RoleEdit.tsx';
-import Users from './screens/Users.tsx';
-import UserDetail from './screens/UserDetail.tsx';
-import UserEdit from './screens/UserEdit.tsx';
-import Clients from './screens/Clients.tsx';
-import ClientDetail from './screens/ClientDetail.tsx';
-import ClientEdit from './screens/ClientEdit.tsx';
-import Subcategories from './screens/Subcategories.tsx';
-import SubcategoryDetail from './screens/SubcategoryDetail.tsx';
-import SubcategoryEdit from './screens/SubcategoryEdit.tsx';
-import UnitOfMeasure from './screens/UnitOfMeasure.tsx';
-import UnitOfMeasureDetail from './screens/UnitOfMeasureDetail.tsx';
-import UnitOfMeasureEdit from './screens/UnitOfMeasureEdit.tsx';
-import Currency from './screens/Currency.tsx';
-import CurrencyDetail from './screens/CurrencyDetail.tsx';
-import CurrencyEdit from './screens/CurrencyEdit.tsx';
-import ImportErrors from './screens/ImportErrors.tsx';
-import Reporting from './screens/Reporting.tsx';
-import ClientSettings from './screens/ClientSettings.tsx';
-import Settings from './screens/Settings.tsx';
+import Dashboard from './screens/Dashboard';
+import LoginScreen from './screens/LoginScreen';
+import ProtectedRoute from './components/ProtectedRoute';
+import { useAuth } from './contexts/AuthContext';
+import Invoices from './screens/Invoices';
+import InvoiceDetail from './screens/InvoiceDetail';
+import InvoiceEdit from './screens/InvoiceEdit';
+import Suppliers from './screens/Suppliers';
+import SupplierDetail from './screens/SupplierDetail';
+import SupplierEdit from './screens/SupplierEdit';
+import BusinessUnits from './screens/BusinessUnits';
+import BusinessUnitDetail from './screens/BusinessUnitDetail';
+import BusinessUnitEdit from './screens/BusinessUnitEdit';
+import Regions from './screens/Regions';
+import RegionDetail from './screens/RegionDetail';
+import RegionEdit from './screens/RegionEdit';
+import Roles from './screens/Roles';
+import RoleDetail from './screens/RoleDetail';
+import RoleEdit from './screens/RoleEdit';
+import Users from './screens/Users';
+import UserDetail from './screens/UserDetail';
+import UserEdit from './screens/UserEdit';
+import Clients from './screens/Clients';
+import ClientDetail from './screens/ClientDetail';
+import ClientEdit from './screens/ClientEdit';
+import Subcategories from './screens/Subcategories';
+import SubcategoryDetail from './screens/SubcategoryDetail';
+import SubcategoryEdit from './screens/SubcategoryEdit';
+import UnitOfMeasure from './screens/UnitOfMeasure';
+import UnitOfMeasureDetail from './screens/UnitOfMeasureDetail';
+import UnitOfMeasureEdit from './screens/UnitOfMeasureEdit';
+import Currency from './screens/Currency';
+import CurrencyDetail from './screens/CurrencyDetail';
+import CurrencyEdit from './screens/CurrencyEdit';
+import ImportErrors from './screens/ImportErrors';
+import Reporting from './screens/Reporting';
+import ClientSettings from './screens/ClientSettings';
+import Settings from './screens/Settings';
+import ScreenPermissions from './screens/ScreenPermissions';
 
 export default function AppRoutes() {
   const { isAuthenticated, login } = useAuth();
@@ -69,7 +70,7 @@ export default function AppRoutes() {
       <Route 
         path="/dashboard" 
         element={
-          <ProtectedRoute>
+          <ProtectedRoute screenRoute="/dashboard">
             <Dashboard />
           </ProtectedRoute>
         } 
@@ -79,7 +80,7 @@ export default function AppRoutes() {
       <Route 
         path="/invoices" 
         element={
-          <ProtectedRoute>
+          <ProtectedRoute screenRoute="/invoices">
             <Invoices />
           </ProtectedRoute>
         } 
@@ -87,7 +88,7 @@ export default function AppRoutes() {
       <Route 
         path="/invoices/:id" 
         element={
-          <ProtectedRoute>
+          <ProtectedRoute screenRoute="/invoices">
             <InvoiceDetail />
           </ProtectedRoute>
         } 
@@ -95,7 +96,7 @@ export default function AppRoutes() {
       <Route 
         path="/invoices/:id/edit" 
         element={
-          <ProtectedRoute>
+          <ProtectedRoute screenRoute="/invoices">
             <InvoiceEdit />
           </ProtectedRoute>
         } 
@@ -183,7 +184,7 @@ export default function AppRoutes() {
       <Route 
         path="/roles" 
         element={
-          <ProtectedRoute requiredRoles={['client_admin', 'superadmin']}>
+          <ProtectedRoute screenRoute="/roles">
             <Roles />
           </ProtectedRoute>
         } 
@@ -191,7 +192,7 @@ export default function AppRoutes() {
       <Route 
         path="/roles/:id" 
         element={
-          <ProtectedRoute requiredRoles={['client_admin', 'superadmin']}>
+          <ProtectedRoute screenRoute="/roles">
             <RoleDetail />
           </ProtectedRoute>
         } 
@@ -208,7 +209,7 @@ export default function AppRoutes() {
       <Route 
         path="/users" 
         element={
-          <ProtectedRoute requiredRoles={['client_admin', 'superadmin']}>
+          <ProtectedRoute screenRoute="/users">
             <Users />
           </ProtectedRoute>
         } 
@@ -216,7 +217,7 @@ export default function AppRoutes() {
       <Route 
         path="/users/:id" 
         element={
-          <ProtectedRoute requiredRoles={['client_admin', 'superadmin']}>
+          <ProtectedRoute screenRoute="/users">
             <UserDetail />
           </ProtectedRoute>
         } 
@@ -224,7 +225,7 @@ export default function AppRoutes() {
       <Route 
         path="/users/:id/edit" 
         element={
-          <ProtectedRoute requiredRoles={['client_admin', 'superadmin']}>
+          <ProtectedRoute screenRoute="/users">
             <UserEdit />
           </ProtectedRoute>
         } 
@@ -364,6 +365,15 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute>
             <Settings />
+          </ProtectedRoute>
+        } 
+      />
+      
+      <Route 
+        path="/screen-permissions" 
+        element={
+          <ProtectedRoute screenRoute="/screen-permissions">
+            <ScreenPermissions />
           </ProtectedRoute>
         } 
       />

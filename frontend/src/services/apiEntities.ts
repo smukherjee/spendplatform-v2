@@ -1,4 +1,4 @@
-import { api } from './api.ts';
+import { api } from './api';
 // ImportErrors
 export async function fetchImportErrors() {
   const response = await api.get('/import-errors');
@@ -37,19 +37,19 @@ export async function deleteSetting(id: string | number) {
 
 // ClientSettings
 export async function fetchClientSettings() {
-  const response = await api.get('/client-settings');
+  const response = await api.get('/settings');
   return response.data;
 }
 export async function createClientSetting(data: any) {
-  const response = await api.post('/client-settings', data);
+  const response = await api.post('/settings', data);
   return response.data;
 }
 export async function updateClientSetting(id: string | number, data: any) {
-  const response = await api.put(`/client-settings/${id}`, data);
+  const response = await api.put(`/settings/${id}`, data);
   return response.data;
 }
 export async function deleteClientSetting(id: string | number) {
-  const response = await api.delete(`/client-settings/${id}`);
+  const response = await api.delete(`/settings/${id}`);
   return response.data;
 }
 
@@ -198,37 +198,37 @@ export async function deleteSubcategory(id: string | number) {
 
 // UnitOfMeasure
 export async function fetchUnitOfMeasures() {
-  const response = await api.get('/unit-of-measure');
+  const response = await api.get('/unit-of-measures');
   return response.data;
 }
 export async function createUnitOfMeasure(data: any) {
-  const response = await api.post('/unit-of-measure', data);
+  const response = await api.post('/unit-of-measures', data);
   return response.data;
 }
 export async function updateUnitOfMeasure(id: string | number, data: any) {
-  const response = await api.put(`/unit-of-measure/${id}`, data);
+  const response = await api.put(`/unit-of-measures/${id}`, data);
   return response.data;
 }
 export async function deleteUnitOfMeasure(id: string | number) {
-  const response = await api.delete(`/unit-of-measure/${id}`);
+  const response = await api.delete(`/unit-of-measures/${id}`);
   return response.data;
 }
 
 // Currency
 export async function fetchCurrencies() {
-  const response = await api.get('/currency');
+  const response = await api.get('/currencies');
   return response.data;
 }
 export async function createCurrency(data: any) {
-  const response = await api.post('/currency', data);
+  const response = await api.post('/currencies', data);
   return response.data;
 }
 export async function updateCurrency(id: string | number, data: any) {
-  const response = await api.put(`/currency/${id}`, data);
+  const response = await api.put(`/currencies/${id}`, data);
   return response.data;
 }
 export async function deleteCurrency(id: string | number) {
-  const response = await api.delete(`/currency/${id}`);
+  const response = await api.delete(`/currencies/${id}`);
   return response.data;
 }
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchClientSettings, createClientSetting, deleteClientSetting } from '../services/apiEntities.ts';
+import { fetchClientSettings, createClientSetting, deleteClientSetting } from '../services/apiEntities';
 
 export default function ClientSettings() {
   const [settings, setSettings] = useState<any[]>([]);

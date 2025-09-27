@@ -1,42 +1,154 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List
+from sqlalchemy.orm import Session
 from schemas.user import UserCreate, UserRead
-from utils import get_current_role, not_implemented, enforce_role, get_client_id
+from models.user import User
+from database import get_db
+from utils import get_current_role, enforce_role, get_client_id
 from logging_config import log_audit
 
 router = APIRouter(prefix="/users", tags=["User"])
 
 @router.get("", response_model=List[UserRead], summary="List all users")
-def get_users(role: str = Depends(get_current_role), client_id: int = Depends(get_client_id)):
+def get_users(role: str = Depends(get_current_role), client_id: int = Depends(get_client_id), db: Session = Depends(get_db)):
     """Returns a list of all users for the current client (unless superadmin)."""
     enforce_role(role, ["client_admin", "superadmin"])
-    log_audit(action="get_users", user=role, client_id=client_id, details=f"List users")
-    # Example: query = db.query(User).filter(User.client_id == client_id) if role != "superadmin" else db.query(User)
-    not_implemented()
+    log_audit(action="get_users", user=role, client_id=client_id, details="List users")
+    
+    # Query users based on role
+    if role == "superadmin":
+        users = db.query(User).all()
+    else:
+        users = db.query(User).filter(User.client_id == client_id).all()
+    
+    # Convert to dict to exclude relationships that aren't in the schema
+    return [{
+        "id": u.id,
+        "username": u.username,
+        "email": u.email,
+        "client_id": u.client_id,
+        "personalisation": u.personalisation,
+        "roles": [r.name for r in u.roles] if hasattr(u, 'roles') and u.roles else []
+    } for u in users]
 
 @router.post("", response_model=UserRead, summary="Create a new user")
-def post_users(user: UserCreate, role: str = Depends(get_current_role), client_id: int = Depends(get_client_id)):
+def post_users(user: UserCreate, role: str = Depends(get_current_role), client_id: int = Depends(get_client_id), db: Session = Depends(get_db)):
     """Creates a new user for the current client (unless superadmin)."""
     enforce_role(role, ["client_admin", "superadmin"])
     log_audit(action="post_users", user=role, client_id=client_id, details=f"Create user: {user.username}")
-    # Example: user.client_id = client_id if role != "superadmin" else user.client_id
-    not_implemented()
+    
+    # Create new user
+    db_user = User(
+        username=user.username,
+        email=user.email,
+        client_id=client_id if role != "superadmin" else user.client_id,
+        personalisation=user.personalisation if hasattr(user, 'personalisation') else None
+    )
+    
+    # Set password if provided
+    if hasattr(user, 'password'):
+        db_user.set_password(user.password)
+    
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    
+    return {
+        "id": db_user.id,
+        "username": db_user.username,
+        "email": db_user.email,
+        "client_id": db_user.client_id,
+        "personalisation": db_user.personalisation,
+        "roles": [r.name for r in db_user.roles] if hasattr(db_user, 'roles') and db_user.roles else []
+    }
 
 @router.get("/{id}", response_model=UserRead, summary="Get a user by ID")
-def get_user(id: int, role: str = Depends(get_current_role), client_id: int = Depends(get_client_id)):
-    """Returns a user by ID, filtered by client if not superadmin."""
-    log_audit(action="get_user", user=role, client_id=client_id, details=f"Get user id: {id}")
-    not_implemented()
+def get_user(id: int, role: str = Depends(get_current_role), client_id: int = Depends(get_client_id), db: Session = Depends(get_db)):
+    """Returns a specific user by ID."""
+    enforce_role(role, ["client_admin", "superadmin"])
+    log_audit(action="get_user", user=role, client_id=client_id, details=f"Get user {id}")
+    
+    # Query user based on role
+    if role == "superadmin":
+        user = db.query(User).filter(User.id == id).first()
+    else:
+        user = db.query(User).filter(
+            User.id == id,
+            User.client_id == client_id
+        ).first()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    return {
+        "id": user.id,
+        "username": user.username,
+        "email": user.email,
+        "client_id": user.client_id,
+        "personalisation": user.personalisation,
+        "roles": [r.name for r in user.roles] if hasattr(user, 'roles') and user.roles else []
+    }
 
 @router.put("/{id}", response_model=UserRead, summary="Update a user")
-def put_user(id: int, user: UserCreate, role: str = Depends(get_current_role), client_id: int = Depends(get_client_id)):
-    """Updates a user by ID, filtered by client if not superadmin."""
+def put_user(id: int, user: UserCreate, role: str = Depends(get_current_role), client_id: int = Depends(get_client_id), db: Session = Depends(get_db)):
+    """Updates a user by ID."""
+    enforce_role(role, ["client_admin", "superadmin"])
     log_audit(action="put_user", user=role, client_id=client_id, details=f"Update user id: {id}")
-    not_implemented()
+    
+    # Find existing user
+    if role == "superadmin":
+        db_user = db.query(User).filter(User.id == id).first()
+    else:
+        db_user = db.query(User).filter(
+            User.id == id,
+            User.client_id == client_id
+        ).first()
+    
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Update fields
+    for field, value in user.dict().items():
+        if field == "password":
+            if value:  # Only update password if provided
+                db_user.set_password(value)
+        elif field == "client_id" and role != "superadmin":
+            continue  # Don't allow client_id updates for non-superadmin
+        else:
+            setattr(db_user, field, value)
+    
+    db.commit()
+    db.refresh(db_user)
+    
+    return {
+        "id": db_user.id,
+        "username": db_user.username,
+        "email": db_user.email,
+        "client_id": db_user.client_id,
+        "personalisation": db_user.personalisation,
+        "roles": [r.name for r in db_user.roles] if hasattr(db_user, 'roles') and db_user.roles else []
+    }
 
 @router.delete("/{id}", response_model=None, summary="Delete a user")
-def delete_user(id: int, role: str = Depends(get_current_role), client_id: int = Depends(get_client_id)):
-    """Deletes a user by ID, filtered by client if not superadmin."""
+def delete_user(id: int, role: str = Depends(get_current_role), client_id: int = Depends(get_client_id), db: Session = Depends(get_db)):
+    """Deletes a user by ID."""
     enforce_role(role, ["client_admin", "superadmin"])
     log_audit(action="delete_user", user=role, client_id=client_id, details=f"Delete user id: {id}")
-    not_implemented()
+    
+    # Find existing user
+    if role == "superadmin":
+        db_user = db.query(User).filter(User.id == id).first()
+    else:
+        db_user = db.query(User).filter(
+            User.id == id,
+            User.client_id == client_id
+        ).first()
+    
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Hard delete (no soft delete in User model)
+    db.delete(db_user)
+    db.commit()
+    
+    return {"message": "User deleted successfully"}

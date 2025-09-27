@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchRoles, createRole, deleteRole } from '../services/apiEntities.ts';
+import { fetchRoles, createRole, deleteRole } from '../services/apiEntities';
 
 export default function Roles() {
   const [roles, setRoles] = useState<any[]>([]);

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { createTestToken, logout } from '../services/api.ts';
+import { createTestToken, logout } from '../services/api';
 
 export default function LoginTest() {
   const [status, setStatus] = useState<string>('Not logged in');

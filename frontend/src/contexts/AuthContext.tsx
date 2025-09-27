@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { clearAllPermissionCaches } from '../services/permissions';
 
 interface User {
   username: string;
@@ -29,8 +30,8 @@ export function AuthProvider({ children }: { children: any }) {
 
   const checkAuthStatus = (): boolean => {
     try {
-      const token = localStorage.getItem('access_token');
-      const userData = localStorage.getItem('user_data');
+      const token = sessionStorage.getItem('access_token');
+      const userData = sessionStorage.getItem('user_data');
       
       if (token && userData) {
         const parsedUser = JSON.parse(userData);
@@ -51,17 +52,24 @@ export function AuthProvider({ children }: { children: any }) {
   };
 
   const login = (userData: User) => {
+    // Clear any existing permission cache before setting new user
+    clearAllPermissionCaches();
+    
     setUser(userData);
-    localStorage.setItem('user_data', JSON.stringify(userData));
+    sessionStorage.setItem('user_data', JSON.stringify(userData));
     console.log('User logged in:', userData);
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('token_type');
-    localStorage.removeItem('user_data');
-    console.log('User logged out');
+    sessionStorage.removeItem('access_token');
+    sessionStorage.removeItem('token_type');
+    sessionStorage.removeItem('user_data');
+    
+    // Clear permission cache to ensure fresh permissions for next login
+    clearAllPermissionCaches();
+    
+    console.log('User logged out and permission cache cleared');
   };
 
   const contextValue: AuthContextType = {

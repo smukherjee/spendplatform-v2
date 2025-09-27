@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login as apiLogin } from '../services/api.ts';
+import { login as apiLogin } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 
 interface LoginScreenProps {
   onLoginSuccess?: (userData: any) => void;
@@ -11,26 +12,48 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   const [password, setPassword] = useState('');  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [debugLogs, setDebugLogs] = useState<string[]>([]);
   const navigate = useNavigate();
+  const { login: authLogin } = useAuth();
+
+  const addDebugLog = (message: string) => {
+    const timestamp = new Date().toLocaleTimeString();
+    const logMessage = `[${timestamp}] ${message}`;
+    console.log(logMessage);
+    setDebugLogs(prev => [...prev.slice(-4), logMessage]); // Keep last 5 logs
+  };
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    addDebugLog(`🔄 Starting login attempt for user: ${username}`);
 
     try {
+      addDebugLog(`📡 Calling API login...`);
       const result = await apiLogin(username, password);
-      console.log('Login successful, redirecting...');
+      addDebugLog(`✅ API login successful: ${JSON.stringify(result.user)}`);
+      
+      // Call AuthContext login to update app state
+      if (result.user) {
+        addDebugLog(`🔐 Updating auth context...`);
+        authLogin(result.user);
+      }
       
       if (onLoginSuccess && result.user) {
+        addDebugLog(`📞 Calling onLoginSuccess callback...`);
         onLoginSuccess(result.user);
       }
       
+      addDebugLog(`🏠 Navigating to dashboard...`);
       // Redirect to dashboard after successful login
       navigate('/dashboard');
     } catch (err: any) {
       console.error('Login failed:', err);
-      setError(err.response?.data?.detail || 'Login failed. Please check your credentials.');
+      const errorMessage = err.response?.data?.detail || err.message || 'Login failed. Please check your credentials.';
+      addDebugLog(`❌ Login failed: ${errorMessage}`);
+      addDebugLog(`🔍 Error details: ${JSON.stringify(err.response?.data || err)}`);
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -41,19 +64,32 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
     setPassword(testPassword);
     setLoading(true);
     setError('');
+    addDebugLog(`🧪 Test login attempt: ${testUsername}/${testPassword}`);
 
     try {
+      addDebugLog(`📡 Calling API login for test user...`);
       const result = await apiLogin(testUsername, testPassword);
-      console.log('Test login successful, redirecting...');
+      addDebugLog(`✅ Test login successful: ${JSON.stringify(result.user)}`);
+      
+      // Call AuthContext login to update app state
+      if (result.user) {
+        addDebugLog(`🔐 Updating auth context for test user...`);
+        authLogin(result.user);
+      }
       
       if (onLoginSuccess && result.user) {
+        addDebugLog(`📞 Calling onLoginSuccess callback for test user...`);
         onLoginSuccess(result.user);
       }
       
+      addDebugLog(`🏠 Navigating to dashboard from test login...`);
       navigate('/dashboard');
     } catch (err: any) {
       console.error('Test login failed:', err);
-      setError(err.response?.data?.detail || 'Login failed. Please check your credentials.');
+      const errorMessage = err.response?.data?.detail || err.message || 'Login failed. Please check your credentials.';
+      addDebugLog(`❌ Test login failed: ${errorMessage}`);
+      addDebugLog(`🔍 Test error details: ${JSON.stringify(err.response?.data || err)}`);
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -170,7 +206,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <button
               type="button"
-              onClick={() => handleTestUserLogin('user', 'userpw')}
+              onClick={() => handleTestUserLogin('user', 'user123')}
               disabled={loading}
               style={{
                 padding: '0.5rem',
@@ -182,12 +218,12 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
                 cursor: loading ? 'not-allowed' : 'pointer'
               }}
             >
-              Login as User (user/userpw)
+              Login as User (user/user123)
             </button>
             
             <button
               type="button"
-              onClick={() => handleTestUserLogin('clientadmin', 'clientadminpw')}
+              onClick={() => handleTestUserLogin('clientadmin', 'admin123')}
               disabled={loading}
               style={{
                 padding: '0.5rem',
@@ -199,12 +235,12 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
                 cursor: loading ? 'not-allowed' : 'pointer'
               }}
             >
-              Login as Client Admin (clientadmin/clientadminpw)
+              Login as Client Admin (clientadmin/admin123)
             </button>
             
             <button
               type="button"
-              onClick={() => handleTestUserLogin('superadmin', 'superadminpw')}
+              onClick={() => handleTestUserLogin('superadmin', 'superadmin123')}
               disabled={loading}
               style={{
                 padding: '0.5rem',
@@ -216,10 +252,56 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
                 cursor: loading ? 'not-allowed' : 'pointer'
               }}
             >
-              Login as Super Admin (superadmin/superadminpw)
+              Login as Super Admin (superadmin/superadmin123)
             </button>
           </div>
         </div>
+
+        {/* Debug Logs Section */}
+        {debugLogs.length > 0 && (
+          <div style={{
+            marginTop: '1rem',
+            borderTop: '1px solid #eee',
+            paddingTop: '1rem'
+          }}>
+            <p style={{ fontSize: '0.8rem', color: '#666', marginBottom: '0.5rem', textAlign: 'center' }}>
+              🐛 Debug Logs (Development Mode):
+            </p>
+            <div style={{
+              backgroundColor: '#f8f9fa',
+              border: '1px solid #e9ecef',
+              borderRadius: '4px',
+              padding: '0.5rem',
+              fontSize: '0.7rem',
+              fontFamily: 'monospace',
+              maxHeight: '150px',
+              overflowY: 'auto'
+            }}>
+              {debugLogs.map((log, index) => (
+                <div key={index} style={{ marginBottom: '0.25rem', lineHeight: 1.3 }}>
+                  {log}
+                </div>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => setDebugLogs([])}
+              style={{
+                marginTop: '0.5rem',
+                padding: '0.25rem 0.5rem',
+                backgroundColor: '#6c757d',
+                color: 'white',
+                border: 'none',
+                borderRadius: '3px',
+                fontSize: '0.7rem',
+                cursor: 'pointer',
+                width: '100%'
+              }}
+            >
+              Clear Debug Logs
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

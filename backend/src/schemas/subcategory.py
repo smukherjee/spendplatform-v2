@@ -11,7 +11,6 @@ class SubCategoryCreate(SubCategoryBase):
 
 class SubCategoryRead(SubCategoryBase):
     id: int
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}
 
 # For L1-L4, reuse SubCategoryBase/Create/Read

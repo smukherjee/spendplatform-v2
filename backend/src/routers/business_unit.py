@@ -46,7 +46,7 @@ def post_business_units(bu: BusinessUnitCreate, role: str = Depends(get_current_
     
     return db_bu
 
-@router.get("/{id}", response_model=BusinessUnitRead, summary="Get a business unit by ID")
+@router.get("/{id}", response_model=BusinessUnitRead, summary="Get a specific business unit")
 def get_business_unit(id: int, role: str = Depends(get_current_role), client_id: int = Depends(get_client_id), db: Session = Depends(get_db)):
     """Returns a business unit by ID, filtered by client if not superadmin."""
     log_audit(action="get_business_unit", user=role, client_id=client_id, details=f"Get business unit id: {id}")

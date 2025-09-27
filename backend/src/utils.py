@@ -45,15 +45,19 @@ def get_current_role(token: str = Depends(oauth2_scheme)) -> Literal["superadmin
 def get_current_user(token: str = Depends(oauth2_scheme)) -> dict:
     return decode_access_token(token)
 
-def not_implemented():
-    raise HTTPException(status_code=501, detail="Not Implemented")
-
 def get_client_id(token: str = Depends(oauth2_scheme)) -> int:
     payload = decode_access_token(token)
     client_id = payload.get("client_id")
     if client_id is None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Missing client_id")
     return client_id
+
+def get_current_user_id(token: str = Depends(oauth2_scheme)) -> int:
+    payload = decode_access_token(token)
+    user_id = payload.get("user_id")
+    if user_id is None:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Missing user_id")
+    return user_id
 
 def enforce_role(role: str, allowed: list):
     if role not in allowed:
