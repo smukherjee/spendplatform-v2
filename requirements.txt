@@ -1,0 +1,31 @@
+fastapi
+uv
+pytest
+starlette
+pluggy
+pydantic
+pygments
+iniconfig
+httpx
+certifi
+h11
+httpcore
+anyio
+idna
+sniffio
+annotated-types
+typing-extensions
+typing-inspection
+
+# Added for Phase 1 design (multi-tenancy, import, security, migrations)
+sqlalchemy
+alembic
+pandas
+argon2-cffi
+passlib
+python-jose
+psycopg2-binary
+# Linting/Formatting
+black
+flake8
+isort
