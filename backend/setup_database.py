@@ -75,9 +75,9 @@ def insert_test_data(engine):
         
         # Create test users
         users_data = [
-            {"username": "superadmin", "email": "superadmin@test.com", "password": "superadminpw", "role": "superadmin"},
-            {"username": "clientadmin", "email": "clientadmin@test.com", "password": "clientadminpw", "role": "client_admin"},
-            {"username": "user", "email": "user@test.com", "password": "userpw", "role": "user"}
+            {"username": "superadmin", "email": "superadmin@test.com", "password": "superadmin123", "role": "superadmin"},
+            {"username": "clientadmin", "email": "clientadmin@test.com", "password": "clientadmin123", "role": "client_admin"},
+            {"username": "user", "email": "user@test.com", "password": "user123", "role": "user"}
         ]
         
         for user_data in users_data:

@@ -19,9 +19,10 @@ def get_token(username, password):
     assert response.status_code == 200, f"Token fetch failed for {username}"
     return f"Bearer {response.json()['access_token']}"
 
-SUPERADMIN_TOKEN = get_token("superadmin", "superadminpw")
-CLIENT_ADMIN_TOKEN = get_token("clientadmin", "clientadminpw")
-USER_TOKEN = get_token("user", "userpw")
+# Test data
+SUPERADMIN_TOKEN = get_token("superadmin", "superadmin123")
+CLIENT_ADMIN_TOKEN = get_token("clientadmin", "clientadmin123")
+USER_TOKEN = get_token("user", "user123")
 
 # 1. Client Endpoints
 

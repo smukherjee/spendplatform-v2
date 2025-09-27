@@ -11,23 +11,49 @@ export const api = axios.create({
 // Add JWT token to requests
 api.interceptors.request.use((config) => {
   const token = sessionStorage.getItem('access_token');
+  
+  // Log all outgoing requests for debugging
+  console.log(`🚀 API Request: ${config.method?.toUpperCase()} ${config.url}`);
+  console.log('📋 Request data:', config.data);
+  
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
-  } else if (process.env.NODE_ENV === 'development') {
-    // Development: Add basic auth or create a development token
-    // You'll need to replace this with actual credentials or implement proper login
+    console.log('🔐 Auth token added to request');
+    
+    // Decode and log token info (for debugging)
+    try {
+      const tokenPayload = token.split('.')[1];
+      const decodedPayload = JSON.parse(atob(tokenPayload));
+      console.log('👤 Token user info:', {
+        username: decodedPayload.sub,
+        role: decodedPayload.role,
+        client_id: decodedPayload.client_id,
+        exp: new Date(decodedPayload.exp * 1000)
+      });
+    } catch (e) {
+      console.warn('⚠️ Could not decode token for debugging');
+    }
+  } else {
     console.warn('🔐 No auth token found - API calls may fail');
-    // Uncomment and replace with actual dev credentials:
-    // config.headers.Authorization = 'Bearer YOUR_DEV_TOKEN_HERE';
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('🔧 Development mode: Consider implementing auto-login for testing');
+    }
   }
   return config;
 });
 
 // Handle token refresh on 401 errors
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log(`✅ API Response: ${response.status} ${response.config.method?.toUpperCase()} ${response.config.url}`);
+    return response;
+  },
   async (error) => {
+    console.error(`❌ API Error: ${error.response?.status} ${error.config?.method?.toUpperCase()} ${error.config?.url}`);
+    console.error('📄 Error response data:', error.response?.data);
+    
     if (error.response?.status === 401) {
+      console.warn('🚫 401 Unauthorized - attempting token refresh...');
       // Try to refresh token or redirect to login
       const refreshToken = sessionStorage.getItem('refresh_token');
       if (refreshToken) {
@@ -109,8 +135,8 @@ export function logout() {
 export async function createTestToken() {
   try {
     // Use one of the test users from your backend:
-    // superadmin/superadminpw, clientadmin/clientadminpw, user/userpw
-    await login('user', 'userpw');
+    // superadmin/superadmin123, clientadmin/clientadmin123, user/user123
+    await login('user', 'user123');
     console.log('Successfully logged in with test user credentials');
     return true;
   } catch (error) {
@@ -156,8 +182,48 @@ export const fetchRoles = async (): Promise<Role[]> => {
 
 // User CRUD operations
 export const createUser = async (user: any): Promise<any> => {
-  const response = await api.post('/users', user);
-  return response.data;
+  console.log('🔧 API.createUser - Starting API call');
+  console.log('📋 Request payload:', {
+    ...user,
+    password: user.password ? '[PROVIDED]' : '[MISSING]'
+  });
+  console.log('🔐 Auth headers will be added by interceptor');
+  
+  try {
+    console.log('📡 Making POST request to /users...');
+    const response = await api.post('/users', user);
+    console.log('✅ API call successful');
+    console.log('📨 Response status:', response.status);
+    console.log('📄 Response data:', response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error('❌ API.createUser failed');
+    console.error('📊 Error details:', {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      headers: error.response?.headers
+    });
+    
+    // Enhanced validation error logging
+    if (error.response?.status === 422 && error.response?.data?.detail) {
+      console.error('🔍 VALIDATION ERROR DETAILS:');
+      if (Array.isArray(error.response.data.detail)) {
+        error.response.data.detail.forEach((validationError: any, index: number) => {
+          console.error(`❌ Validation Error ${index + 1}:`, {
+            field: validationError.loc?.join('.') || 'unknown',
+            message: validationError.msg || 'No message',
+            type: validationError.type || 'No type',
+            input: validationError.input || 'No input shown'
+          });
+        });
+      } else {
+        console.error('❌ Validation Error:', error.response.data.detail);
+      }
+    }
+    
+    throw error;
+  }
 };
 
 export const updateUser = async (id: string | number, user: any): Promise<any> => {

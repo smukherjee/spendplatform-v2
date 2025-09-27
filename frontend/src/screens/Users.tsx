@@ -460,6 +460,12 @@ export default function Users() {
 
       setLazyLoading(true);
       
+      console.log('🔍 USER CREATE DEBUG - Starting user creation process');
+      console.log('📋 Raw form data received:', {
+        ...rowData,
+        password: rowData.password ? '[PROVIDED]' : '[MISSING]'
+      });
+      
       // Create user via API - map frontend fields to backend schema
       const { id, name, client_name, ...userData } = rowData;
       const userCreateData = {
@@ -470,7 +476,16 @@ export default function Users() {
         personalisation: rowData.personalisation || null
       };
       
+      console.log('📤 Data being sent to backend:', {
+        ...userCreateData,
+        password: userCreateData.password ? '[PROVIDED]' : '[MISSING]'
+      });
+      console.log('🔐 Auth token present:', !!sessionStorage.getItem('access_token'));
+      console.log('👤 Current user context:', JSON.parse(sessionStorage.getItem('user_data') || '{}'));
+      
+      console.log('📡 Calling createUser API...');
       const newUser = await createUser(userCreateData);
+      console.log('✅ API call successful, received:', newUser);
       
       // Replace temporary row with real user data
       const updatedUsers = users.map(u => 
@@ -490,21 +505,37 @@ export default function Users() {
         life: 3000 
       });
     } catch (error: any) {
-      console.error('Full error creating user:', error);
-      console.error('Error response:', error.response);
-      console.error('Error data:', error.response?.data);
-      console.error('User data sent:', rowData);
+      console.error('❌ USER CREATE ERROR - Full error details:');
+      console.error('🔍 Error object:', error);
+      console.error('📡 HTTP status:', error.response?.status);
+      console.error('📄 Response headers:', error.response?.headers);
+      console.error('💾 Response data:', error.response?.data);
+      console.error('🔧 Request config:', error.config);
+      console.error('📤 Data that was sent:', {
+        ...rowData,
+        password: rowData.password ? '[PROVIDED]' : '[MISSING]'
+      });
+      console.error('🔐 Auth status at time of error:', {
+        hasToken: !!sessionStorage.getItem('access_token'),
+        userData: sessionStorage.getItem('user_data')
+      });
       
       let errorMessage = 'Failed to create user';
       if (error.response?.data?.detail) {
+        console.log('📋 Parsing backend validation errors...');
         if (Array.isArray(error.response.data.detail)) {
+          console.log('📝 Validation errors:', error.response.data.detail);
           errorMessage = error.response.data.detail.map((err: any) => `${err.loc?.join('.')}: ${err.msg}`).join(', ');
         } else {
+          console.log('📝 Error detail:', error.response.data.detail);
           errorMessage = error.response.data.detail;
         }
       } else if (error.message) {
+        console.log('📝 Error message:', error.message);
         errorMessage = error.message;
       }
+      
+      console.error('📢 Final error message shown to user:', errorMessage);
       
       toast.current?.show({ 
         severity: 'error', 
@@ -546,15 +577,37 @@ export default function Users() {
       return;
     }
 
-    // For new users, validate password
-    if (!user.id && (!user.password || user.password.length < 6)) {
-      toast.current?.show({ 
-        severity: 'error', 
-        summary: 'Validation Error', 
-        detail: 'Password is required and must be at least 6 characters long', 
-        life: 3000 
-      });
-      return;
+    // For new users, validate required fields
+    if (!user.id) {
+      if (!user.password || user.password.length < 6) {
+        toast.current?.show({ 
+          severity: 'error', 
+          summary: 'Validation Error', 
+          detail: 'Password is required and must be at least 6 characters long', 
+          life: 3000 
+        });
+        return;
+      }
+
+      if (!user.email?.trim()) {
+        toast.current?.show({ 
+          severity: 'error', 
+          summary: 'Validation Error', 
+          detail: 'Email is required', 
+          life: 3000 
+        });
+        return;
+      }
+
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email)) {
+        toast.current?.show({ 
+          severity: 'error', 
+          summary: 'Validation Error', 
+          detail: 'Invalid email format', 
+          life: 3000 
+        });
+        return;
+      }
     }
 
     if ((user.name || user.username)?.trim()) {
@@ -569,8 +622,23 @@ export default function Users() {
           _users[index] = updatedUser;
           toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'User Updated', life: 3000 });
         } else {
-          // Create new user
-          const newUser = await createUser(_user);
+          // Create new user - map to backend schema
+          console.log('🔍 SAVEUSER CREATE - Raw user data:', { ..._user, password: _user.password ? '[PROVIDED]' : '[MISSING]' });
+          
+          const userCreateData = {
+            username: (_user.username || _user.name)?.trim(),
+            email: _user.email?.trim(),
+            password: _user.password,
+            client_id: parseInt(_user.client_id?.toString() || '0'),
+            personalisation: _user.personalisation || null
+          };
+          
+          console.log('📤 SAVEUSER CREATE - Data being sent to backend:', {
+            ...userCreateData,
+            password: userCreateData.password ? '[PROVIDED]' : '[MISSING]'
+          });
+          
+          const newUser = await createUser(userCreateData);
           _users.push(newUser);
           toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'User Created', life: 3000 });
         }

@@ -71,9 +71,9 @@ def main():
     
     # Test users from our database setup
     test_users = [
-        ("user", "userpw"),
-        ("clientadmin", "clientadminpw"),
-        ("superadmin", "superadminpw")
+        ("superadmin", "superadmin123"),
+        ("clientadmin", "clientadmin123"),
+        ("user", "user123")
     ]
     
     for username, password in test_users:

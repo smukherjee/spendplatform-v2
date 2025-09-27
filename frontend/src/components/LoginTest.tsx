@@ -43,15 +43,9 @@ export default function LoginTest() {
       <p>Status: {status}</p>
       
       <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
-        <button 
-          onClick={handleTestLogin} 
-          disabled={loading}
-          style={{ padding: '8px 16px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px' }}
-        >
-          {loading ? 'Logging in...' : 'Test Login (user/userpw)'}
-        </button>
-        
-        <button 
+        <button onClick={handleTestLogin} disabled={loading}>
+          {loading ? 'Logging in...' : 'Test Login (user/user123)'}
+        </button>        <button 
           onClick={handleLogout}
           style={{ padding: '8px 16px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px' }}
         >
@@ -69,9 +63,9 @@ export default function LoginTest() {
       <div style={{ marginTop: '15px', fontSize: '12px', color: '#666' }}>
         <p>Available test users in backend:</p>
         <ul>
-          <li>superadmin / superadminpw (superadmin role)</li>
-          <li>clientadmin / clientadminpw (client_admin role)</li>
-          <li>user / userpw (user role) ← Currently used</li>
+          <li>superadmin / superadmin123 (superadmin role)</li>
+          <li>clientadmin / clientadmin123 (client_admin role)</li>
+          <li>user / user123 (user role) ← Currently used</li>
         </ul>
       </div>
     </div>

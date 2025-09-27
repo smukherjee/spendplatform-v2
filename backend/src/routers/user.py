@@ -34,26 +34,70 @@ def get_users(role: str = Depends(get_current_role), client_id: int = Depends(ge
 @router.post("", response_model=UserRead, summary="Create a new user")
 def post_users(user: UserCreate, role: str = Depends(get_current_role), client_id: int = Depends(get_client_id), db: Session = Depends(get_db)):
     """Creates a new user for the current client (unless superadmin)."""
-    enforce_role(role, ["client_admin", "superadmin"])
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    # Log incoming request details
+    logger.info(f"🔍 USER CREATE REQUEST - Role: {role}, Client ID: {client_id}")
+    logger.info(f"📝 Request data: username={user.username}, email={user.email}, client_id={getattr(user, 'client_id', 'not_provided')}")
+    logger.info(f"🔐 Password provided: {hasattr(user, 'password') and bool(getattr(user, 'password', None))}")
+    
+    try:
+        enforce_role(role, ["client_admin", "superadmin"])
+        logger.info(f"✅ Role enforcement passed for: {role}")
+    except Exception as e:
+        logger.error(f"❌ Role enforcement failed: {str(e)}")
+        raise
+    
     log_audit(action="post_users", user=role, client_id=client_id, details=f"Create user: {user.username}")
     
+    # Determine client_id to use
+    target_client_id = client_id if role != "superadmin" else user.client_id
+    logger.info(f"🏢 Target client_id: {target_client_id} (role={role})")
+    
     # Create new user
-    db_user = User(
-        username=user.username,
-        email=user.email,
-        client_id=client_id if role != "superadmin" else user.client_id,
-        personalisation=user.personalisation if hasattr(user, 'personalisation') else None
-    )
+    try:
+        db_user = User(
+            username=user.username,
+            email=user.email,
+            client_id=target_client_id,
+            personalisation=user.personalisation if hasattr(user, 'personalisation') else None
+        )
+        logger.info(f"👤 User object created: {db_user.username} for client {db_user.client_id}")
+    except Exception as e:
+        logger.error(f"❌ Failed to create User object: {str(e)}")
+        raise
     
     # Set password if provided
     if hasattr(user, 'password'):
-        db_user.set_password(user.password)
+        logger.info(f"🔐 Setting password for user: {user.username}")
+        try:
+            db_user.set_password(user.password)
+            logger.info(f"✅ Password set successfully")
+        except Exception as e:
+            logger.error(f"❌ Failed to set password: {str(e)}")
+            raise
+    else:
+        logger.warning(f"⚠️ No password provided for user: {user.username}")
     
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
+    # Database operations
+    try:
+        logger.info(f"💾 Adding user to database session...")
+        db.add(db_user)
+        
+        logger.info(f"💾 Committing user to database...")
+        db.commit()
+        
+        logger.info(f"🔄 Refreshing user object...")
+        db.refresh(db_user)
+        
+        logger.info(f"✅ User created successfully with ID: {db_user.id}")
+    except Exception as e:
+        logger.error(f"❌ Database operation failed: {str(e)}")
+        db.rollback()
+        raise
     
-    return {
+    result = {
         "id": db_user.id,
         "username": db_user.username,
         "email": db_user.email,
@@ -61,6 +105,9 @@ def post_users(user: UserCreate, role: str = Depends(get_current_role), client_i
         "personalisation": db_user.personalisation,
         "roles": [r.name for r in db_user.roles] if hasattr(db_user, 'roles') and db_user.roles else []
     }
+    
+    logger.info(f"📤 Returning user data: {result}")
+    return result
 
 @router.get("/{id}", response_model=UserRead, summary="Get a user by ID")
 def get_user(id: int, role: str = Depends(get_current_role), client_id: int = Depends(get_client_id), db: Session = Depends(get_db)):
