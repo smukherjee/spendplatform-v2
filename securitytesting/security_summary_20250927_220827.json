@@ -1,0 +1,20 @@
+{
+  "report_type": "security_assessment",
+  "timestamp": "20250927_220827",
+  "total_issues": 3,
+  "critical_issues": 0,
+  "high_issues": 0,
+  "test_duration": 0.040267,
+  "owasp_categories_tested": [
+    "A01:2021 \u2013 Broken Access Control",
+    "A02:2021 \u2013 Cryptographic Failures",
+    "A03:2021 \u2013 Injection",
+    "A04:2021 \u2013 Insecure Design",
+    "A05:2021 \u2013 Security Misconfiguration",
+    "A06:2021 \u2013 Vulnerable Components",
+    "A07:2021 \u2013 Authentication Failures",
+    "A08:2021 \u2013 Software/Data Integrity",
+    "A09:2021 \u2013 Logging/Monitoring Failures",
+    "A10:2021 \u2013 Server-Side Request Forgery"
+  ]
+}

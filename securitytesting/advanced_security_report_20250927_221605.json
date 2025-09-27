@@ -1,0 +1,141 @@
+{
+  "test_timestamp": "2025-09-27 22:16:05.018353",
+  "available_tools": {
+    "bandit": true,
+    "safety": true,
+    "cryptography": true,
+    "jwt": true,
+    "beautifulsoup4": true
+  },
+  "static_analysis": {
+    "total_issues": 0,
+    "high_severity": 0,
+    "medium_severity": 0,
+    "low_severity": 0,
+    "issues": [],
+    "files_scanned": 0,
+    "status": "completed"
+  },
+  "dependency_scan": {
+    "status": "error",
+    "message": "Could not parse Safety output",
+    "raw_output": ""
+  },
+  "jwt_analysis": {
+    "status": "error",
+    "message": "module 'jwt' has no attribute 'get_algos_by_key_size'"
+  },
+  "cryptographic_analysis": {
+    "cryptography_library_version": "46.0.1",
+    "hash_algorithms": [
+      {
+        "algorithm": "sha256",
+        "security_level": "SECURE",
+        "recommended": true
+      },
+      {
+        "algorithm": "sha384",
+        "security_level": "SECURE",
+        "recommended": true
+      },
+      {
+        "algorithm": "sha512",
+        "security_level": "SECURE",
+        "recommended": true
+      },
+      {
+        "algorithm": "blake2b",
+        "security_level": "SECURE",
+        "recommended": true
+      },
+      {
+        "algorithm": "sha1",
+        "security_level": "INSECURE",
+        "recommended": false,
+        "reason": "Cryptographically broken or weak"
+      },
+      {
+        "algorithm": "md5",
+        "security_level": "INSECURE",
+        "recommended": false,
+        "reason": "Cryptographically broken or weak"
+      }
+    ],
+    "encryption_algorithms": [
+      {
+        "algorithm": "AES-256-GCM",
+        "security_level": "SECURE",
+        "recommended": true,
+        "use_case": "Symmetric encryption with authentication"
+      },
+      {
+        "algorithm": "RSA-4096",
+        "security_level": "SECURE",
+        "recommended": true,
+        "use_case": "Asymmetric encryption and digital signatures"
+      },
+      {
+        "algorithm": "ChaCha20-Poly1305",
+        "security_level": "SECURE",
+        "recommended": true,
+        "use_case": "High-performance authenticated encryption"
+      }
+    ],
+    "security_analysis": [],
+    "recommendations": [
+      {
+        "category": "Password Hashing",
+        "recommendation": "Use Argon2id, bcrypt, or scrypt for password hashing",
+        "severity": "CRITICAL",
+        "details": "Never use plain hash functions for passwords"
+      },
+      {
+        "category": "Random Number Generation",
+        "recommendation": "Use cryptographically secure random number generators",
+        "severity": "HIGH",
+        "details": "Use os.urandom() or secrets module for cryptographic randomness"
+      },
+      {
+        "category": "Key Management",
+        "recommendation": "Implement proper key rotation and storage",
+        "severity": "HIGH",
+        "details": "Store keys securely and rotate them regularly"
+      },
+      {
+        "category": "TLS Configuration",
+        "recommendation": "Use TLS 1.3 with strong cipher suites",
+        "severity": "MEDIUM",
+        "details": "Disable weak ciphers and outdated TLS versions"
+      }
+    ],
+    "status": "analyzed"
+  },
+  "secrets_scan": {
+    "total_files_scanned": 57,
+    "total_secrets_found": 1,
+    "secrets_by_type": {
+      "password": 1
+    },
+    "files_with_secrets": [
+      {
+        "file": "backend/src/tests/test_contract_api.py",
+        "secrets": [
+          {
+            "type": "password",
+            "line": 18,
+            "match": "password\": password})",
+            "severity": "MEDIUM"
+          }
+        ]
+      }
+    ],
+    "status": "completed"
+  },
+  "summary": {
+    "total_issues": 0,
+    "critical_issues": 0,
+    "high_issues": 0,
+    "medium_issues": 0,
+    "low_issues": 0
+  }
+}

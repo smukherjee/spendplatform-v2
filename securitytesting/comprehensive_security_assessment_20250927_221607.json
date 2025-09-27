@@ -1,0 +1,18 @@
+{
+  "assessment_timestamp": "2025-09-27T22:16:07.603231",
+  "tools_available": [
+    "bandit",
+    "safety",
+    "cryptography",
+    "jwt",
+    "beautifulsoup4"
+  ],
+  "tools_missing": [],
+  "basic_report": "/Users/sujoymukherjee/code/spendplatform-v2/securitytesting/owasp_basic_report_20250927_221553.json",
+  "advanced_report": "/Users/sujoymukherjee/code/spendplatform-v2/securitytesting/advanced_security_report_20250927_221605.json",
+  "recommendations": [
+    "\u2713 Static code analysis available - Review Bandit findings",
+    "\u2713 Dependency scanning available - Check for vulnerable packages",
+    "\u2713 Cryptographic analysis available - Review crypto implementation"
+  ]
+}

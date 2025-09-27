@@ -1,0 +1,45 @@
+{
+  "test_start_time": "2025-09-27T22:15:53.432710",
+  "test_end_time": "2025-09-27T22:15:53.480277",
+  "duration_seconds": 0.047567,
+  "total_issues": 3,
+  "severity_breakdown": {
+    "CRITICAL": 0,
+    "HIGH": 0,
+    "MEDIUM": 2,
+    "LOW": 1,
+    "INFO": 0
+  },
+  "issues": [
+    {
+      "category": "Cryptographic Failures",
+      "title": "Unencrypted HTTP Communication",
+      "description": "Application uses HTTP instead of HTTPS",
+      "severity": "MEDIUM",
+      "evidence": "Base URL: http://localhost:8000",
+      "recommendation": "Implement HTTPS with proper TLS configuration",
+      "cwe_id": "CWE-319",
+      "owasp_category": "A02:2021"
+    },
+    {
+      "category": "Insecure Design",
+      "title": "Missing Rate Limiting",
+      "description": "No rate limiting detected on authentication endpoint",
+      "severity": "MEDIUM",
+      "evidence": "Sent 20 requests in 0.02 seconds",
+      "recommendation": "Implement rate limiting to prevent brute force attacks",
+      "cwe_id": "CWE-307",
+      "owasp_category": "A04:2021"
+    },
+    {
+      "category": "Logging and Monitoring",
+      "title": "Missing Request Tracking",
+      "description": "No request ID for tracking security events",
+      "severity": "LOW",
+      "evidence": "Missing X-Request-ID header",
+      "recommendation": "Implement request tracking and comprehensive security logging",
+      "cwe_id": "CWE-778",
+      "owasp_category": "A09:2021"
+    }
+  ]
+}

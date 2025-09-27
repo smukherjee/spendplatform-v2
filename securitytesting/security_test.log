@@ -1,0 +1,41 @@
+2025-09-27 22:08:27,593 - INFO - Starting comprehensive OWASP security assessment
+2025-09-27 22:08:27,593 - INFO - Testing A01: Broken Access Control
+2025-09-27 22:08:27,595 - ERROR - Authentication failed for user: 404
+2025-09-27 22:08:27,596 - INFO - Testing A02: Cryptographic Failures
+2025-09-27 22:08:27,597 - INFO - Testing A03: Injection Attacks
+2025-09-27 22:08:27,602 - INFO - Testing A04: Insecure Design
+2025-09-27 22:08:27,623 - INFO - Testing A05: Security Misconfiguration
+2025-09-27 22:08:27,627 - INFO - Testing A06: Vulnerable and Outdated Components
+2025-09-27 22:08:27,628 - INFO - Testing A07: Identification and Authentication Failures
+2025-09-27 22:08:27,629 - ERROR - Authentication failed for superadmin: 404
+2025-09-27 22:08:27,631 - INFO - Testing A08: Software and Data Integrity Failures
+2025-09-27 22:08:27,632 - INFO - Testing A09: Security Logging and Monitoring Failures
+2025-09-27 22:08:27,633 - INFO - Testing A10: Server-Side Request Forgery
+2025-09-27 22:08:27,633 - INFO - Security assessment completed in 0.04 seconds
+2025-09-27 22:08:27,633 - INFO - Found 3 security issues
+2025-09-27 22:08:27,634 - INFO - Security reports generated: /Users/sujoymukherjee/code/spendplatform-v2/securitytesting/owasp_security_report_20250927_220827.json, /Users/sujoymukherjee/code/spendplatform-v2/securitytesting/owasp_security_report_20250927_220827.html
+2025-09-27 22:15:53,432 - INFO - Starting comprehensive OWASP security assessment
+2025-09-27 22:15:53,432 - INFO - Testing A01: Broken Access Control
+2025-09-27 22:15:53,441 - ERROR - Authentication failed for user: 404
+2025-09-27 22:15:53,442 - INFO - Testing A02: Cryptographic Failures
+2025-09-27 22:15:53,443 - INFO - Testing A03: Injection Attacks
+2025-09-27 22:15:53,449 - INFO - Testing A04: Insecure Design
+2025-09-27 22:15:53,470 - INFO - Testing A05: Security Misconfiguration
+2025-09-27 22:15:53,474 - INFO - Testing A06: Vulnerable and Outdated Components
+2025-09-27 22:15:53,475 - INFO - Testing A07: Identification and Authentication Failures
+2025-09-27 22:15:53,476 - ERROR - Authentication failed for superadmin: 404
+2025-09-27 22:15:53,478 - INFO - Testing A08: Software and Data Integrity Failures
+2025-09-27 22:15:53,479 - INFO - Testing A09: Security Logging and Monitoring Failures
+2025-09-27 22:15:53,480 - INFO - Testing A10: Server-Side Request Forgery
+2025-09-27 22:15:53,480 - INFO - Security assessment completed in 0.05 seconds
+2025-09-27 22:15:53,480 - INFO - Found 3 security issues
+2025-09-27 22:15:53,480 - INFO - Security reports generated: /Users/sujoymukherjee/code/spendplatform-v2/securitytesting/owasp_basic_report_20250927_221553.json, /Users/sujoymukherjee/code/spendplatform-v2/securitytesting/owasp_basic_report_20250927_221553.html
+2025-09-27 22:16:05,018 - INFO - Running comprehensive advanced security tests...
+2025-09-27 22:16:05,018 - INFO - Running Bandit static security analysis...
+2025-09-27 22:16:05,018 - ERROR - Error scanning /Users/sujoymukherjee/code/spendplatform-v2/backend/src: 'BanditManager' object has no attribute 'discover'
+2025-09-27 22:16:05,018 - ERROR - Error scanning /Users/sujoymukherjee/code/spendplatform-v2/securitytesting: 'BanditManager' object has no attribute 'discover'
+2025-09-27 22:16:05,018 - INFO - Running Safety dependency vulnerability scan...
+2025-09-27 22:16:07,581 - INFO - Analyzing JWT security implementation...
+2025-09-27 22:16:07,581 - INFO - Analyzing cryptographic implementation...
+2025-09-27 22:16:07,582 - INFO - Scanning for hardcoded secrets...
+2025-09-27 22:16:07,603 - INFO - Advanced security reports generated: /Users/sujoymukherjee/code/spendplatform-v2/securitytesting/advanced_security_report_20250927_221605.json, /Users/sujoymukherjee/code/spendplatform-v2/securitytesting/advanced_security_report_20250927_221605.html

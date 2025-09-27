@@ -1,0 +1,88 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Security Testing Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
+        .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .summary-card { background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center; border-left: 4px solid #007bff; }
+        .section { margin-bottom: 30px; padding: 20px; border-radius: 8px; background: #f9f9f9; }
+        .section h3 { color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+        .issue { padding: 10px; margin: 10px 0; border-radius: 4px; border-left: 4px solid #ccc; }
+        .issue.critical { border-left-color: #dc3545; background-color: #f8d7da; }
+        .issue.high { border-left-color: #fd7e14; background-color: #fff3cd; }
+        .issue.medium { border-left-color: #ffc107; background-color: #fff3cd; }
+        .issue.low { border-left-color: #28a745; background-color: #d4edda; }
+        .code { background: #f1f1f1; padding: 10px; border-radius: 4px; font-family: monospace; overflow-x: auto; }
+        .recommendation { background: #e7f3ff; padding: 10px; border-radius: 4px; margin-top: 10px; }
+        .status-available { color: #28a745; font-weight: bold; }
+        .status-unavailable { color: #dc3545; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Advanced Security Testing Report</h1>
+            <p>SpendPlatform v2 - Comprehensive Security Analysis</p>
+            <p>Generated on: 2025-09-27 22:19:21.138052</p>
+        </div>
+        
+        <div class="summary">
+            <div class="summary-card">
+                <h3>Total Issues</h3>
+                <h2>0</h2>
+            </div>
+            <div class="summary-card" style="border-left-color: #dc3545;">
+                <h3>Critical</h3>
+                <h2>0</h2>
+            </div>
+            <div class="summary-card" style="border-left-color: #fd7e14;">
+                <h3>High</h3>
+                <h2>0</h2>
+            </div>
+            <div class="summary-card" style="border-left-color: #ffc107;">
+                <h3>Medium</h3>
+                <h2>0</h2>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>🔧 Available Security Tools</h3>
+<p><strong>bandit:</strong> <span class="status-available">✓ Available</span></p><p><strong>safety:</strong> <span class="status-available">✓ Available</span></p><p><strong>cryptography:</strong> <span class="status-available">✓ Available</span></p><p><strong>jwt:</strong> <span class="status-available">✓ Available</span></p><p><strong>beautifulsoup4:</strong> <span class="status-available">✓ Available</span></p>
+        </div>
+        
+        <div class="section">
+            <h3>🔍 Static Code Analysis (Bandit)</h3>
+            <p><strong>Files Scanned:</strong> 0</p>
+            <p><strong>Total Issues:</strong> 0</p>
+            <div class="summary">
+                <div class="summary-card" style="border-left-color: #dc3545;">
+                    <h4>High</h4>
+                    <h3>0</h3>
+                </div>
+                <div class="summary-card" style="border-left-color: #ffc107;">
+                    <h4>Medium</h4>
+                    <h3>0</h3>
+                </div>
+                <div class="summary-card" style="border-left-color: #28a745;">
+                    <h4>Low</h4>
+                    <h3>0</h3>
+                </div>
+            </div>
+
+        </div>
+        
+        <div class="section">
+            <h3>📦 Dependency Vulnerability Scan (Safety)</h3>
+            <p><strong>Status:</strong> error</p>
+            <p><strong>Message:</strong> Could not parse Safety output</p>
+
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,26 @@
+# Security Testing Requirements
+# 
+# This file references the main project requirements.txt which now includes
+# all security testing dependencies in the "Security Testing Dependencies" section.
+#
+# Installation Instructions:
+# 1. Install main project requirements (includes security testing deps):
+#    pip install -r ../requirements.txt
+#
+# 2. OR install only security testing requirements:
+#    pip install requests>=2.28.0 urllib3>=1.26.0
+#
+# 3. For advanced security testing, uncomment additional tools in ../requirements.txt:
+#    - bandit (static security analysis)
+#    - safety (dependency vulnerability scanning)
+#    - sqlmap (SQL injection testing)
+#    - nmap-python (network scanning)
+#    - python-owasp-zap-v2.12 (OWASP ZAP integration)
+#    - scapy (network packet manipulation)
+#    - cryptography (cryptographic testing)
+#    - pyjwt (JWT token analysis)
+#    - selenium (web application testing)
+#    - beautifulsoup4 (HTML parsing for XSS detection)
+
+# Core security testing dependencies (already included in main requirements.txt)
+-r ../requirements.txt
