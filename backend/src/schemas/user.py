@@ -15,3 +15,6 @@ class UserRead(UserBase):
     roles: List[str] = []
 
     model_config = {"from_attributes": True}
+
+class PasswordReset(BaseModel):
+    password: str

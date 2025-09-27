@@ -13,6 +13,12 @@ api.interceptors.request.use((config) => {
   const token = sessionStorage.getItem('access_token');
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
+  } else if (process.env.NODE_ENV === 'development') {
+    // Development: Add basic auth or create a development token
+    // You'll need to replace this with actual credentials or implement proper login
+    console.warn('🔐 No auth token found - API calls may fail');
+    // Uncomment and replace with actual dev credentials:
+    // config.headers.Authorization = 'Bearer YOUR_DEV_TOKEN_HERE';
   }
   return config;
 });
@@ -124,5 +130,49 @@ export async function fetchInvoices() {
   const response = await api.get('/invoices');
   return response.data;
 }
+
+// Client API functions
+export interface Client {
+  id: number;
+  name: string;
+}
+
+export const fetchClients = async (): Promise<Client[]> => {
+  const response = await api.get('/clients');
+  return response.data;
+};
+
+// Role API functions
+export interface Role {
+  id: number;
+  name: string;
+  permissions?: any;
+}
+
+export const fetchRoles = async (): Promise<Role[]> => {
+  const response = await api.get('/roles');
+  return response.data;
+};
+
+// User CRUD operations
+export const createUser = async (user: any): Promise<any> => {
+  const response = await api.post('/users', user);
+  return response.data;
+};
+
+export const updateUser = async (id: string | number, user: any): Promise<any> => {
+  const response = await api.put(`/users/${id}`, user);
+  return response.data;
+};
+
+export const resetUserPassword = async (id: string | number, password: string): Promise<any> => {
+  const response = await api.patch(`/users/${id}/password`, { password });
+  return response.data;
+};
+
+export const deleteUser = async (id: string | number): Promise<void> => {
+  const response = await api.delete(`/users/${id}`);
+  return response.data;
+};
 
 // Add more entity-specific API calls as needed

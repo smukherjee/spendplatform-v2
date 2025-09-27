@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List
 from sqlalchemy.orm import Session
-from schemas.user import UserCreate, UserRead
+from schemas.user import UserCreate, UserRead, PasswordReset
 from models.user import User
 from database import get_db
 from utils import get_current_role, enforce_role, get_client_id
@@ -152,3 +152,32 @@ def delete_user(id: int, role: str = Depends(get_current_role), client_id: int =
     db.commit()
     
     return {"message": "User deleted successfully"}
+
+@router.patch("/{id}/password", summary="Reset user password")
+def reset_user_password(id: int, password_data: PasswordReset, role: str = Depends(get_current_role), client_id: int = Depends(get_client_id), db: Session = Depends(get_db)):
+    """Resets a user's password (admin only)."""
+    enforce_role(role, ["client_admin", "superadmin"])
+    log_audit(action="reset_password", user=role, client_id=client_id, details=f"Reset password for user id: {id}")
+    
+    # Validate password
+    new_password = password_data.password
+    if not new_password or len(new_password) < 6:
+        raise HTTPException(status_code=400, detail="Password must be at least 6 characters long")
+    
+    # Find existing user
+    if role == "superadmin":
+        db_user = db.query(User).filter(User.id == id).first()
+    else:
+        db_user = db.query(User).filter(
+            User.id == id,
+            User.client_id == client_id
+        ).first()
+    
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Update password
+    db_user.set_password(new_password)
+    db.commit()
+    
+    return {"message": "Password reset successfully"}
