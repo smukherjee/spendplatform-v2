@@ -25,6 +25,7 @@
     "react-router-dom": "^7.9.3"
   },
   "devDependencies": {
+    "@bugsnag/js": "^8.6.0",
     "@eslint/js": "^9.36.0",
     "@types/axios": "^0.9.36",
     "@types/firebase": "^2.4.32",

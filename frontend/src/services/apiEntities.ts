@@ -1,3 +1,22 @@
+import { api } from './api.ts';
+// ImportErrors
+export async function fetchImportErrors() {
+  const response = await api.get('/import-errors');
+  return response.data;
+}
+// ImportErrors
+export async function createImportError(data: any) {
+  const response = await api.post('/import-errors', data);
+  return response.data;
+}
+export async function updateImportError(id: string | number, data: any) {
+  const response = await api.put(`/import-errors/${id}`, data);
+  return response.data;
+}
+export async function deleteImportError(id: string | number) {
+  const response = await api.delete(`/import-errors/${id}`);
+  return response.data;
+}
 // Settings
 export async function fetchSettings() {
   const response = await api.get('/settings');
@@ -33,7 +52,6 @@ export async function deleteClientSetting(id: string | number) {
   const response = await api.delete(`/client-settings/${id}`);
   return response.data;
 }
-import { api } from './api';
 
 // Business Units
 export async function fetchBusinessUnits() {

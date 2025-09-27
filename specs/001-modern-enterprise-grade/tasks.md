@@ -48,6 +48,19 @@ T025. [P] Generate and review Swagger/OpenAPI docs
 T026. [P] Write user and developer guides in Markdown
 T027. [P] Review and improve code quality, performance, and security
 
+## User-Driven & Implemented Tasks
+
+T028. [x] Scaffold React frontend screens for all entities (BusinessUnits, Invoices, Suppliers, Regions, Roles, Users, Clients, Subcategories, UnitOfMeasure, Currency, ImportErrors, Reporting, ClientSettings, Settings)
+T029. [x] Implement React Router navigation and central routing for all entity screens
+T030. [x] Create and connect API service (axios) for frontend-backend CRUD operations for all entities
+T031. [x] Add UI forms and list logic for CRUD operations in all entity screens
+T032. [x] Implement frontend error boundary with Sentry/Bugsnag/Firebase integration
+T033. [x] Implement backend audit logging and modular logging config
+T034. [x] Fix lint errors and redeclaration issues in API service and screens
+T035. [x] Ensure separation of concerns and compliance with maintainability principles
+T036. [x] Validate CRUD pattern and error handling for all entities
+T037. [x] Update and synchronize tasks.md with all user-driven and implemented tasks
+
 ## Parallel Execution Guidance
 
 - Tasks marked [P] can be executed in parallel (e.g., model creation, tests, documentation)

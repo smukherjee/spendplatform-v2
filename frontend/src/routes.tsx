@@ -1,83 +1,372 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Dashboard from './screens/Dashboard';
-import Login from './screens/Login';
-import Invoices from './screens/Invoices';
-import InvoiceDetail from './screens/InvoiceDetail';
-import InvoiceEdit from './screens/InvoiceEdit';
-import Suppliers from './screens/Suppliers';
-import SupplierDetail from './screens/SupplierDetail';
-import SupplierEdit from './screens/SupplierEdit';
-import BusinessUnits from './screens/BusinessUnits';
-import BusinessUnitDetail from './screens/BusinessUnitDetail';
-import BusinessUnitEdit from './screens/BusinessUnitEdit';
-import Regions from './screens/Regions';
-import RegionDetail from './screens/RegionDetail';
-import RegionEdit from './screens/RegionEdit';
-import Roles from './screens/Roles';
-import RoleDetail from './screens/RoleDetail';
-import RoleEdit from './screens/RoleEdit';
-import Users from './screens/Users';
-import UserDetail from './screens/UserDetail';
-import UserEdit from './screens/UserEdit';
-import Clients from './screens/Clients';
-import ClientDetail from './screens/ClientDetail';
-import ClientEdit from './screens/ClientEdit';
-import Subcategories from './screens/Subcategories';
-import SubcategoryDetail from './screens/SubcategoryDetail';
-import SubcategoryEdit from './screens/SubcategoryEdit';
-import UnitOfMeasure from './screens/UnitOfMeasure';
-import UnitOfMeasureDetail from './screens/UnitOfMeasureDetail';
-import UnitOfMeasureEdit from './screens/UnitOfMeasureEdit';
-import Currency from './screens/Currency';
-import CurrencyDetail from './screens/CurrencyDetail';
-import CurrencyEdit from './screens/CurrencyEdit';
-import ImportErrors from './screens/ImportErrors';
-import Reporting from './screens/Reporting';
-import ClientSettings from './screens/ClientSettings';
-import Settings from './screens/Settings';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import Dashboard from './screens/Dashboard.tsx';
+import LoginScreen from './screens/LoginScreen.tsx';
+import ProtectedRoute from './components/ProtectedRoute.tsx';
+import { useAuth } from './contexts/AuthContext.tsx';
+import Invoices from './screens/Invoices.tsx';
+import InvoiceDetail from './screens/InvoiceDetail.tsx';
+import InvoiceEdit from './screens/InvoiceEdit.tsx';
+import Suppliers from './screens/Suppliers.tsx';
+import SupplierDetail from './screens/SupplierDetail.tsx';
+import SupplierEdit from './screens/SupplierEdit.tsx';
+import BusinessUnits from './screens/BusinessUnits.tsx';
+import BusinessUnitDetail from './screens/BusinessUnitDetail.tsx';
+import BusinessUnitEdit from './screens/BusinessUnitEdit.tsx';
+import Regions from './screens/Regions.tsx';
+import RegionDetail from './screens/RegionDetail.tsx';
+import RegionEdit from './screens/RegionEdit.tsx';
+import Roles from './screens/Roles.tsx';
+import RoleDetail from './screens/RoleDetail.tsx';
+import RoleEdit from './screens/RoleEdit.tsx';
+import Users from './screens/Users.tsx';
+import UserDetail from './screens/UserDetail.tsx';
+import UserEdit from './screens/UserEdit.tsx';
+import Clients from './screens/Clients.tsx';
+import ClientDetail from './screens/ClientDetail.tsx';
+import ClientEdit from './screens/ClientEdit.tsx';
+import Subcategories from './screens/Subcategories.tsx';
+import SubcategoryDetail from './screens/SubcategoryDetail.tsx';
+import SubcategoryEdit from './screens/SubcategoryEdit.tsx';
+import UnitOfMeasure from './screens/UnitOfMeasure.tsx';
+import UnitOfMeasureDetail from './screens/UnitOfMeasureDetail.tsx';
+import UnitOfMeasureEdit from './screens/UnitOfMeasureEdit.tsx';
+import Currency from './screens/Currency.tsx';
+import CurrencyDetail from './screens/CurrencyDetail.tsx';
+import CurrencyEdit from './screens/CurrencyEdit.tsx';
+import ImportErrors from './screens/ImportErrors.tsx';
+import Reporting from './screens/Reporting.tsx';
+import ClientSettings from './screens/ClientSettings.tsx';
+import Settings from './screens/Settings.tsx';
 
 export default function AppRoutes() {
+  const { isAuthenticated, login } = useAuth();
+
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/invoices" element={<Invoices />} />
-        <Route path="/invoices/:id" element={<InvoiceDetail />} />
-        <Route path="/invoices/:id/edit" element={<InvoiceEdit />} />
-        <Route path="/suppliers" element={<Suppliers />} />
-        <Route path="/suppliers/:id" element={<SupplierDetail />} />
-        <Route path="/suppliers/:id/edit" element={<SupplierEdit />} />
-        <Route path="/business-units" element={<BusinessUnits />} />
-        <Route path="/business-units/:id" element={<BusinessUnitDetail />} />
-        <Route path="/business-units/:id/edit" element={<BusinessUnitEdit />} />
-        <Route path="/regions" element={<Regions />} />
-        <Route path="/regions/:id" element={<RegionDetail />} />
-        <Route path="/regions/:id/edit" element={<RegionEdit />} />
-        <Route path="/roles" element={<Roles />} />
-        <Route path="/roles/:id" element={<RoleDetail />} />
-        <Route path="/roles/:id/edit" element={<RoleEdit />} />
-        <Route path="/users" element={<Users />} />
-        <Route path="/users/:id" element={<UserDetail />} />
-        <Route path="/users/:id/edit" element={<UserEdit />} />
-        <Route path="/clients" element={<Clients />} />
-        <Route path="/clients/:id" element={<ClientDetail />} />
-        <Route path="/clients/:id/edit" element={<ClientEdit />} />
-        <Route path="/subcategories" element={<Subcategories />} />
-        <Route path="/subcategories/:id" element={<SubcategoryDetail />} />
-        <Route path="/subcategories/:id/edit" element={<SubcategoryEdit />} />
-        <Route path="/unit-of-measure" element={<UnitOfMeasure />} />
-        <Route path="/unit-of-measure/:id" element={<UnitOfMeasureDetail />} />
-        <Route path="/unit-of-measure/:id/edit" element={<UnitOfMeasureEdit />} />
-        <Route path="/currency" element={<Currency />} />
-        <Route path="/currency/:id" element={<CurrencyDetail />} />
-        <Route path="/currency/:id/edit" element={<CurrencyEdit />} />
-        <Route path="/import-errors" element={<ImportErrors />} />
-        <Route path="/reporting" element={<Reporting />} />
-        <Route path="/client-settings" element={<ClientSettings />} />
-        <Route path="/settings" element={<Settings />} />
-      </Routes>
-    </Router>
+    <Routes>
+      {/* Public routes */}
+      <Route 
+        path="/login" 
+        element={
+          isAuthenticated ? (
+            <Navigate to="/dashboard" replace />
+          ) : (
+            <LoginScreen onLoginSuccess={login} />
+          )
+        } 
+      />
+      
+      {/* Protected routes */}
+      <Route 
+        path="/" 
+        element={
+          <ProtectedRoute>
+            <Navigate to="/dashboard" replace />
+          </ProtectedRoute>
+        } 
+      />
+      
+      <Route 
+        path="/dashboard" 
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        } 
+      />
+      
+      {/* Invoice routes */}
+      <Route 
+        path="/invoices" 
+        element={
+          <ProtectedRoute>
+            <Invoices />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/invoices/:id" 
+        element={
+          <ProtectedRoute>
+            <InvoiceDetail />
+          </ProtectedRoute>
+        } 
+      />  
+      <Route 
+        path="/invoices/:id/edit" 
+        element={
+          <ProtectedRoute>
+            <InvoiceEdit />
+          </ProtectedRoute>
+        } 
+      />
+      
+      {/* Supplier routes */}
+      <Route 
+        path="/suppliers" 
+        element={
+          <ProtectedRoute>
+            <Suppliers />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/suppliers/:id" 
+        element={
+          <ProtectedRoute>
+            <SupplierDetail />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/suppliers/:id/edit" 
+        element={
+          <ProtectedRoute>
+            <SupplierEdit />
+          </ProtectedRoute>
+        } 
+      />
+      
+      {/* Business Unit routes */}
+      <Route 
+        path="/business-units" 
+        element={
+          <ProtectedRoute>
+            <BusinessUnits />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/business-units/:id" 
+        element={
+          <ProtectedRoute>
+            <BusinessUnitDetail />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/business-units/:id/edit" 
+        element={
+          <ProtectedRoute>
+            <BusinessUnitEdit />
+          </ProtectedRoute>
+        } 
+      />
+      
+      {/* Region routes */}
+      <Route 
+        path="/regions" 
+        element={
+          <ProtectedRoute>
+            <Regions />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/regions/:id" 
+        element={
+          <ProtectedRoute>
+            <RegionDetail />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/regions/:id/edit" 
+        element={
+          <ProtectedRoute>
+            <RegionEdit />
+          </ProtectedRoute>
+        } 
+      />
+      
+      {/* Admin-only routes */}
+      <Route 
+        path="/roles" 
+        element={
+          <ProtectedRoute requiredRoles={['client_admin', 'superadmin']}>
+            <Roles />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/roles/:id" 
+        element={
+          <ProtectedRoute requiredRoles={['client_admin', 'superadmin']}>
+            <RoleDetail />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/roles/:id/edit" 
+        element={
+          <ProtectedRoute requiredRoles={['client_admin', 'superadmin']}>
+            <RoleEdit />
+          </ProtectedRoute>
+        } 
+      />
+      
+      <Route 
+        path="/users" 
+        element={
+          <ProtectedRoute requiredRoles={['client_admin', 'superadmin']}>
+            <Users />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/users/:id" 
+        element={
+          <ProtectedRoute requiredRoles={['client_admin', 'superadmin']}>
+            <UserDetail />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/users/:id/edit" 
+        element={
+          <ProtectedRoute requiredRoles={['client_admin', 'superadmin']}>
+            <UserEdit />
+          </ProtectedRoute>
+        } 
+      />
+      
+      {/* Super admin only routes */}
+      <Route 
+        path="/clients" 
+        element={
+          <ProtectedRoute requiredRoles={['superadmin']}>
+            <Clients />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/clients/:id" 
+        element={
+          <ProtectedRoute requiredRoles={['superadmin']}>
+            <ClientDetail />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/clients/:id/edit" 
+        element={
+          <ProtectedRoute requiredRoles={['superadmin']}>
+            <ClientEdit />
+          </ProtectedRoute>
+        } 
+      />
+      
+      {/* Other protected routes */}
+      <Route 
+        path="/subcategories" 
+        element={
+          <ProtectedRoute>
+            <Subcategories />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/subcategories/:id" 
+        element={
+          <ProtectedRoute>
+            <SubcategoryDetail />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/subcategories/:id/edit" 
+        element={
+          <ProtectedRoute>
+            <SubcategoryEdit />
+          </ProtectedRoute>
+        } 
+      />
+      
+      <Route 
+        path="/unit-of-measure" 
+        element={
+          <ProtectedRoute>
+            <UnitOfMeasure />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/unit-of-measure/:id" 
+        element={
+          <ProtectedRoute>
+            <UnitOfMeasureDetail />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/unit-of-measure/:id/edit" 
+        element={
+          <ProtectedRoute>
+            <UnitOfMeasureEdit />
+          </ProtectedRoute>
+        } 
+      />
+      
+      <Route 
+        path="/currency" 
+        element={
+          <ProtectedRoute>
+            <Currency />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/currency/:id" 
+        element={
+          <ProtectedRoute>
+            <CurrencyDetail />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/currency/:id/edit" 
+        element={
+          <ProtectedRoute>
+            <CurrencyEdit />
+          </ProtectedRoute>
+        } 
+      />
+      
+      <Route 
+        path="/import-errors" 
+        element={
+          <ProtectedRoute>
+            <ImportErrors />
+          </ProtectedRoute>
+        } 
+      />
+      
+      <Route 
+        path="/reporting" 
+        element={
+          <ProtectedRoute>
+            <Reporting />
+          </ProtectedRoute>
+        } 
+      />
+      
+      <Route 
+        path="/client-settings" 
+        element={
+          <ProtectedRoute requiredRoles={['client_admin', 'superadmin']}>
+            <ClientSettings />
+          </ProtectedRoute>
+        } 
+      />
+      
+      <Route 
+        path="/settings" 
+        element={
+          <ProtectedRoute>
+            <Settings />
+          </ProtectedRoute>
+        } 
+      />
+    </Routes>
   );
 }

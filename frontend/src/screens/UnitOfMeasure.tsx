@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchUnitOfMeasures, createUnitOfMeasure, deleteUnitOfMeasure } from '../services/apiEntities';
+import { fetchUnitOfMeasures, createUnitOfMeasure, deleteUnitOfMeasure } from '../services/apiEntities.ts';
 
 export default function UnitOfMeasure() {
   const [units, setUnits] = useState<any[]>([]);

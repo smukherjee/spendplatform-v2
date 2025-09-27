@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from backend.src.utils import get_current_role, not_implemented, get_client_id
+from utils import get_current_role, not_implemented, get_client_id
 
 router = APIRouter(prefix="/audit", tags=["Audit"])
 

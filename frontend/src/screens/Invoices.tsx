@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchInvoices, createInvoice, deleteInvoice } from '../services/apiEntities';
+import { fetchInvoices, createInvoice, deleteInvoice } from '../services/apiEntities.ts';
 
 export default function Invoices() {
   const [invoices, setInvoices] = useState<any[]>([]);

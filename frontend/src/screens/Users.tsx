@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchUsers, createUser, deleteUser } from '../services/apiEntities';
+import { fetchUsers, createUser, deleteUser } from '../services/apiEntities.ts';
 
 export default function Users() {
   const [users, setUsers] = useState<any[]>([]);

@@ -1,0 +1,26 @@
+AUDIT: user=client_admin, client_id=1, action=get_users, details=List users
+AUDIT: user=client_admin, client_id=1, action=get_roles, details=List roles
+AUDIT: user=client_admin, client_id=1, action=get_settings, details=Get client settings
+AUDIT: user=user, client_id=1, action=get_reports, details=List reports
+AUDIT: user=client_admin, client_id=1, action=get_invoices, details=List invoices
+AUDIT: user=superadmin, client_id=1, action=get_invoices, details=List invoices
+AUDIT: user=superadmin, client_id=1, action=get_regions, details=List regions
+AUDIT: user=superadmin, client_id=1, action=get_regions, details=List regions
+AUDIT: user=superadmin, client_id=1, action=get_roles, details=List roles
+AUDIT: user=superadmin, client_id=1, action=get_roles, details=List roles
+AUDIT: user=superadmin, client_id=1, action=get_settings, details=Get client settings
+AUDIT: user=superadmin, client_id=1, action=get_settings, details=Get client settings
+AUDIT: user=superadmin, client_id=1, action=get_clients, details=List clients
+AUDIT: user=superadmin, client_id=1, action=get_clients, details=List clients
+AUDIT: user=superadmin, client_id=1, action=get_users, details=List users
+AUDIT: user=superadmin, client_id=1, action=get_users, details=List users
+AUDIT: user=superadmin, client_id=1, action=get_reports, details=List reports
+AUDIT: user=superadmin, client_id=1, action=get_reports, details=List reports
+AUDIT: user=superadmin, client_id=1, action=get_subcategories, details=List subcategories
+AUDIT: user=superadmin, client_id=1, action=get_subcategories, details=List subcategories
+AUDIT: user=superadmin, client_id=1, action=get_settings, details=Get client settings
+AUDIT: user=superadmin, client_id=1, action=get_settings, details=Get client settings
+AUDIT: user=user, client_id=1, action=get_invoices, details=List invoices
+AUDIT: user=user, client_id=1, action=get_suppliers, details=List suppliers
+AUDIT: user=user, client_id=1, action=get_business_units, details=List business units
+AUDIT: user=user, client_id=1, action=get_invoices, details=List invoices

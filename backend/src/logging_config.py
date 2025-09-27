@@ -1,6 +1,6 @@
 import logging
 from logging.handlers import RotatingFileHandler
-from backend.src.models.audit import AuditLog
+from models.audit import AuditLog
 from sqlalchemy.orm import Session
 import os
 

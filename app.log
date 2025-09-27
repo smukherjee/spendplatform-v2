@@ -1,0 +1,8 @@
+AUDIT: user=client_admin, client_id=1, action=get_users, details=List users
+AUDIT: user=client_admin, client_id=1, action=get_roles, details=List roles
+AUDIT: user=client_admin, client_id=1, action=get_settings, details=Get client settings
+AUDIT: user=user, client_id=1, action=get_reports, details=List reports
+AUDIT: user=client_admin, client_id=1, action=get_users, details=List users
+AUDIT: user=client_admin, client_id=1, action=get_roles, details=List roles
+AUDIT: user=client_admin, client_id=1, action=get_settings, details=Get client settings
+AUDIT: user=user, client_id=1, action=get_reports, details=List reports

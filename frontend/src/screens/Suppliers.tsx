@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchSuppliers, createSupplier, deleteSupplier } from '../services/apiEntities';
+import { fetchSuppliers, createSupplier, deleteSupplier } from '../services/apiEntities.ts';
 
 export default function Suppliers() {
   const [suppliers, setSuppliers] = useState<any[]>([]);

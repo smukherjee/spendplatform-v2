@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchBusinessUnits, createBusinessUnit, deleteBusinessUnit } from '../services/apiEntities';
+import { fetchBusinessUnits, createBusinessUnit, deleteBusinessUnit } from '../services/apiEntities.ts';
 
 export default function BusinessUnits() {
   const [units, setUnits] = useState<any[]>([]);
@@ -8,9 +8,16 @@ export default function BusinessUnits() {
   const [newUnit, setNewUnit] = useState<{ name: string; code: string }>({ name: '', code: '' });
 
   useEffect(() => {
+    console.log('Fetching business units...');
     fetchBusinessUnits()
-      .then((data) => setUnits(data as any[]))
-      .catch((err) => setError(err.message))
+      .then((data) => {
+        console.log('Fetched business units:', data);
+        setUnits(data as any[]);
+      })
+      .catch((err) => {
+        console.error('Error fetching business units:', err);
+        setError(err.message);
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -57,14 +64,18 @@ export default function BusinessUnits() {
         />
         <button type="submit">Add</button>
       </form>
-      <ul>
-        {units.map((unit) => (
-          <li key={unit.id}>
-            {unit.name} ({unit.code})
-            <button onClick={() => handleDelete(unit.id)} style={{ marginLeft: '1rem' }}>Delete</button>
-          </li>
-        ))}
-      </ul>
+      {units.length === 0 && !loading ? (
+        <div>No business units found.</div>
+      ) : (
+        <ul>
+          {units.map((unit) => (
+            <li key={unit.id}>
+              {unit.name} ({unit.code})
+              <button onClick={() => handleDelete(unit.id)} style={{ marginLeft: '1rem' }}>Delete</button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchSettings, createSetting, deleteSetting } from '../services/apiEntities';
+import { fetchSettings, createSetting, deleteSetting } from '../services/apiEntities.ts';
 
 export default function Settings() {
   const [settings, setSettings] = useState<any[]>([]);

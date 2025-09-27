@@ -2,16 +2,26 @@
 Contract Tests: API Endpoints (Failing First)
 pytest style, FastAPI TestClient
 """
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+
 import pytest
+from main import app  # Assumes FastAPI app is in src/main.py
 from fastapi.testclient import TestClient
-from main import app  # Assumes FastAPI app is in main.py
 
 client = TestClient(app)
 
-# Helper: Dummy JWT tokens for RBAC
-SUPERADMIN_TOKEN = "Bearer superadmin.jwt.token"
-CLIENT_ADMIN_TOKEN = "Bearer clientadmin.jwt.token"
-USER_TOKEN = "Bearer user.jwt.token"
+# Helper: Fetch real JWT tokens for RBAC
+
+def get_token(username, password):
+    response = client.post("/token", data={"username": username, "password": password})
+    assert response.status_code == 200, f"Token fetch failed for {username}"
+    return f"Bearer {response.json()['access_token']}"
+
+SUPERADMIN_TOKEN = get_token("superadmin", "superadminpw")
+CLIENT_ADMIN_TOKEN = get_token("clientadmin", "clientadminpw")
+USER_TOKEN = get_token("user", "userpw")
 
 # 1. Client Endpoints
 

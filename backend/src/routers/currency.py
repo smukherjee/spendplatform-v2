@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List
-from backend.src.schemas.currency import CurrencyCreate, CurrencyRead
-from backend.src.utils import get_current_role, not_implemented, enforce_role, get_client_id
-from backend.src.logging_config import log_audit
+from schemas.currency import CurrencyCreate, CurrencyRead
+from utils import get_current_role, not_implemented, enforce_role, get_client_id
+from logging_config import log_audit
 
 router = APIRouter(prefix="/currencies", tags=["Currency"])
 

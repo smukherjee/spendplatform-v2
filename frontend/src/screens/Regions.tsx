@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchRegions, createRegion, deleteRegion } from '../services/apiEntities';
+import { fetchRegions, createRegion, deleteRegion } from '../services/apiEntities.ts';
 
 export default function Regions() {
   const [regions, setRegions] = useState<any[]>([]);

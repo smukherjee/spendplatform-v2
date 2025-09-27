@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchSubcategories, createSubcategory, deleteSubcategory } from '../services/apiEntities';
+import { fetchSubcategories, createSubcategory, deleteSubcategory } from '../services/apiEntities.ts';
 
 export default function Subcategories() {
   const [subcategories, setSubcategories] = useState<any[]>([]);

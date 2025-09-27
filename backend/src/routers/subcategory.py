@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List
-from backend.src.schemas.subcategory import SubCategoryCreate, SubCategoryRead
-from backend.src.utils import get_current_role, not_implemented, enforce_role, get_client_id
-from backend.src.logging_config import log_audit
+from schemas.subcategory import SubCategoryCreate, SubCategoryRead
+from utils import get_current_role, not_implemented, enforce_role, get_client_id
+from logging_config import log_audit
 
 router = APIRouter(prefix="/subcategories", tags=["SubCategory"])
 
