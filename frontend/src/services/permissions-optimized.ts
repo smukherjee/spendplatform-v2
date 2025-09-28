@@ -109,7 +109,6 @@ class PermissionManager {
     console.log(`PermissionManager: Cleared ${cacheSize} cached permissions`);
   }
 
-  // Clear cache for specific route (useful after permission updates)
   clearRouteCache(screenRoute: string): void {
     this.permissionCache.delete(screenRoute);
     this.cacheExpiry.delete(screenRoute);
@@ -149,8 +148,7 @@ export async function filterAllowedRoutes(routes: string[]): Promise<string[]> {
   return routes.filter(route => permissions.get(route) === true);
 }
 
-// React hook for permission checking
-
+// PERFORMANCE OPTIMIZED: React hook for permission checking
 export function usePermission(screenRoute: string, userKey?: string) {
   const [hasAccess, setHasAccess] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);

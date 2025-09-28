@@ -1,61 +1,90 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import Dashboard from './screens/Dashboard';
 import LoginScreen from './screens/LoginScreen';
 import ProtectedRoute from './components/ProtectedRoute';
 import { useAuth } from './contexts/AuthContext';
-import Invoices from './screens/Invoices';
-import InvoiceDetail from './screens/InvoiceDetail';
-import InvoiceEdit from './screens/InvoiceEdit';
-import Suppliers from './screens/Suppliers';
-import SupplierDetail from './screens/SupplierDetail';
-import SupplierEdit from './screens/SupplierEdit';
-import BusinessUnits from './screens/BusinessUnits';
-import BusinessUnitDetail from './screens/BusinessUnitDetail';
-import BusinessUnitEdit from './screens/BusinessUnitEdit';
-import Regions from './screens/Regions';
-import RegionDetail from './screens/RegionDetail';
-import RegionEdit from './screens/RegionEdit';
-import Roles from './screens/Roles';
-import RoleDetail from './screens/RoleDetail';
-import RoleEdit from './screens/RoleEdit';
-import Users from './screens/Users';
-import UserDetail from './screens/UserDetail';
-import UserEdit from './screens/UserEdit';
-import Clients from './screens/Clients';
-import ClientDetail from './screens/ClientDetail';
-import ClientEdit from './screens/ClientEdit';
-import Subcategories from './screens/Subcategories';
-import SubcategoryDetail from './screens/SubcategoryDetail';
-import SubcategoryEdit from './screens/SubcategoryEdit';
-import UnitOfMeasure from './screens/UnitOfMeasure';
-import UnitOfMeasureDetail from './screens/UnitOfMeasureDetail';
-import UnitOfMeasureEdit from './screens/UnitOfMeasureEdit';
-import Currency from './screens/Currency';
-import CurrencyDetail from './screens/CurrencyDetail';
-import CurrencyEdit from './screens/CurrencyEdit';
-import ImportErrors from './screens/ImportErrors';
-import Reporting from './screens/Reporting';
-import ClientSettings from './screens/ClientSettings';
-import Settings from './screens/Settings';
-import ScreenPermissions from './screens/ScreenPermissions';
+import ErrorBoundary from './ErrorBoundary';
+
+// Lazy load heavy components to reduce initial bundle size
+const Dashboard = lazy(() => import('./screens/Dashboard'));
+const Invoices = lazy(() => import('./screens/Invoices'));
+const InvoiceDetail = lazy(() => import('./screens/InvoiceDetail'));
+const InvoiceEdit = lazy(() => import('./screens/InvoiceEdit'));
+const Suppliers = lazy(() => import('./screens/Suppliers'));
+const SupplierDetail = lazy(() => import('./screens/SupplierDetail'));
+const SupplierEdit = lazy(() => import('./screens/SupplierEdit'));
+const BusinessUnits = lazy(() => import('./screens/BusinessUnits'));
+const BusinessUnitDetail = lazy(() => import('./screens/BusinessUnitDetail'));
+const BusinessUnitEdit = lazy(() => import('./screens/BusinessUnitEdit'));
+const Regions = lazy(() => import('./screens/Regions'));
+const RegionDetail = lazy(() => import('./screens/RegionDetail'));
+const RegionEdit = lazy(() => import('./screens/RegionEdit'));
+const Roles = lazy(() => import('./screens/Roles'));
+const RoleDetail = lazy(() => import('./screens/RoleDetail'));
+const RoleEdit = lazy(() => import('./screens/RoleEdit'));
+const Users = lazy(() => import('./screens/Users'));
+const UserDetail = lazy(() => import('./screens/UserDetail'));
+const UserEdit = lazy(() => import('./screens/UserEdit'));
+const Clients = lazy(() => import('./screens/Clients'));
+const ClientDetail = lazy(() => import('./screens/ClientDetail'));
+const ClientEdit = lazy(() => import('./screens/ClientEdit'));
+const Subcategories = lazy(() => import('./screens/Subcategories'));
+const SubcategoryDetail = lazy(() => import('./screens/SubcategoryDetail'));
+const SubcategoryEdit = lazy(() => import('./screens/SubcategoryEdit'));
+const UnitOfMeasure = lazy(() => import('./screens/UnitOfMeasure'));
+const UnitOfMeasureDetail = lazy(() => import('./screens/UnitOfMeasureDetail'));
+const UnitOfMeasureEdit = lazy(() => import('./screens/UnitOfMeasureEdit'));
+const Currency = lazy(() => import('./screens/Currency'));
+const CurrencyDetail = lazy(() => import('./screens/CurrencyDetail'));
+const CurrencyEdit = lazy(() => import('./screens/CurrencyEdit'));
+const ImportErrors = lazy(() => import('./screens/ImportErrors'));
+const Reporting = lazy(() => import('./screens/Reporting'));
+const ClientSettings = lazy(() => import('./screens/ClientSettings'));
+const Settings = lazy(() => import('./screens/Settings'));
+const ScreenPermissions = lazy(() => import('./screens/ScreenPermissions'));
+
+// Loading component with better UX
+const PageLoader = () => (
+  <div style={{ 
+    display: 'flex', 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    minHeight: '200px',
+    color: '#666'
+  }}>
+    <div>
+      <div style={{ 
+        width: '40px', 
+        height: '40px', 
+        border: '3px solid #f3f3f3',
+        borderTop: '3px solid #3498db',
+        borderRadius: '50%',
+        animation: 'spin 1s linear infinite',
+        margin: '0 auto 10px'
+      }} />
+      <div>Loading...</div>
+    </div>
+  </div>
+);
 
 export default function AppRoutes() {
   const { isAuthenticated, login } = useAuth();
 
   return (
-    <Routes>
-      {/* Public routes */}
-      <Route 
-        path="/login" 
-        element={
-          isAuthenticated ? (
-            <Navigate to="/dashboard" replace />
-          ) : (
-            <LoginScreen onLoginSuccess={login} />
-          )
-        } 
-      />
+    <ErrorBoundary>
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          {/* Public routes - no lazy loading for critical paths */}
+          <Route 
+            path="/login" 
+            element={
+              isAuthenticated ? (
+                <Navigate to="/dashboard" replace />
+              ) : (
+                <LoginScreen onLoginSuccess={login} />
+              )
+            } 
+          />
       
       {/* Protected routes */}
       <Route 
@@ -377,6 +406,23 @@ export default function AppRoutes() {
           </ProtectedRoute>
         } 
       />
+      
+      {/* 404 fallback */}
+      <Route 
+        path="*" 
+        element={
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '2rem',
+            color: '#666'
+          }}>
+            <h2>Page Not Found</h2>
+            <p>The page you're looking for doesn't exist.</p>
+          </div>
+        } 
+      />
     </Routes>
+      </Suspense>
+    </ErrorBoundary>
   );
 }

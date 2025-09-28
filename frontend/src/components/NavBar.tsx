@@ -1,13 +1,35 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useMultiplePermissions } from '../services/permissions';
 
-export default function NavBar() {
+// Memoized navigation link component to prevent unnecessary re-renders
+const NavLink = React.memo<{
+  to: string;
+  children: React.ReactNode;
+  className?: string;
+}>(({ to, children, className = '' }) => (
+  <Link 
+    to={to} 
+    style={{ 
+      marginRight: '1rem', 
+      color: '#007bff', 
+      textDecoration: 'none' 
+    }}
+    className={className}
+  >
+    {children}
+  </Link>
+));
+
+NavLink.displayName = 'NavLink';
+
+// Optimized NavBar with React.memo and proper memoization
+const NavBar = React.memo(() => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  // Check permissions for all navigation screens - memoized to prevent infinite re-renders
+  // Memoize screens array to prevent recreation on every render
   const screens = useMemo(() => [
     '/dashboard',
     '/invoices', 
@@ -27,37 +49,22 @@ export default function NavBar() {
     '/screen-permissions'
   ], []);
   
-  // Create a user key that changes when user changes (triggers permission re-fetch)
+  // Fix: Proper user key memoization with correct dependencies
   const userKey = useMemo(() => 
     user ? `${user.user_id}-${user.role}-${user.client_id}` : 'no-user', 
-    [user?.user_id, user?.role, user?.client_id]
+    [user] // Simplified dependency - user object change will trigger re-memo
   );
   
   const { permissions, loading } = useMultiplePermissions(screens, userKey);
 
-  // Debug logging for permissions and user changes (can be removed in production)
-  React.useEffect(() => {
-    console.log('NavBar: User changed, userKey:', userKey);
-    console.log('NavBar: Current user:', user);
-    if (user) {
-      console.log(`NavBar: Permissions will be fetched for ${user.role} (${user.username})`);
-    }
-  }, [userKey, user]);
-
-  React.useEffect(() => {
-    if (!loading) {
-      console.log('Navigation permissions loaded:', Object.fromEntries(permissions));
-      console.log('User role:', user?.role);
-    }
-  }, [loading, permissions, user?.role]);
-
-  const handleLogout = () => {
+  // Memoize logout handler to prevent recreation
+  const handleLogout = useCallback(() => {
     logout();
     navigate('/login');
-  };
+  }, [logout, navigate]);
 
-  // Helper function to check if user has access to a screen
-  const hasAccess = (screen: string) => {
+  // Memoize access check function
+  const hasAccess = useCallback((screen: string) => {
     // If permissions are still loading, show only essential navigation based on role
     if (loading) {
       // Always show dashboard - accessible to all authenticated users
@@ -81,7 +88,7 @@ export default function NavBar() {
     
     // Use actual permissions when loaded
     return permissions.get(screen) === true;
-  };
+  }, [loading, permissions, user?.role]);
 
   return (
     <nav style={{ 
@@ -268,4 +275,8 @@ export default function NavBar() {
       </div>
     </nav>
   );
-}
+});
+
+NavBar.displayName = 'NavBar';
+
+export default NavBar;

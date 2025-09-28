@@ -22,7 +22,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "analyze": "npm run build && npx source-map-explorer 'build/static/js/*.js'",
+    "analyze-webpack": "npm run build && npx webpack-bundle-analyzer build/static/js/*.js"
   },
   "eslintConfig": {
     "extends": [
@@ -45,6 +47,8 @@
   "devDependencies": {
     "@types/node": "^24.5.2",
     "@types/react": "^19.1.14",
-    "@types/react-dom": "^19.1.9"
+    "@types/react-dom": "^19.1.9",
+    "source-map-explorer": "^2.5.3",
+    "webpack-bundle-analyzer": "^4.10.2"
   }
 }
