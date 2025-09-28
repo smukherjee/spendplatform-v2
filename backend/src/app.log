@@ -4262,3 +4262,43 @@ AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=C
 AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /client-settings
 AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /settings
 AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /screen-permissions
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /dashboard
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /suppliers
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /invoices
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /business-units
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /regions
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /dashboard
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /roles
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /users
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /subcategories
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /clients
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /unit-of-measure
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /currency
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /reporting
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /client-settings
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /import-errors
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /settings
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /screen-permissions
+AUDIT: user=client_admin, client_id=1, action=get_clients, details=List clients
+AUDIT: user=client_admin, client_id=1, action=get_roles, details=List roles
+AUDIT: user=client_admin, client_id=1, action=get_users, details=List users
+AUDIT: user=client_admin, client_id=1, action=get_invoices, details=List invoices
+AUDIT: user=client_admin, client_id=1, action=get_suppliers, details=List suppliers
+AUDIT: user=client_admin, client_id=1, action=get_business_units, details=List business units
+AUDIT: user=client_admin, client_id=1, action=get_invoices, details=List invoices
+AUDIT: user=client_admin, client_id=1, action=get_suppliers, details=List suppliers
+AUDIT: user=client_admin, client_id=1, action=get_business_units, details=List business units
+AUDIT: user=client_admin, client_id=1, action=get_regions, details=List regions
+AUDIT: user=client_admin, client_id=1, action=get_clients, details=List clients
+AUDIT: user=client_admin, client_id=1, action=get_roles, details=List roles
+AUDIT: user=client_admin, client_id=1, action=get_users, details=List users
+AUDIT: user=client_admin, client_id=1, action=get_roles, details=List roles
+AUDIT: user=client_admin, client_id=1, action=get_settings, details=Get client settings
+AUDIT: user=client_admin, client_id=1, action=get_settings, details=Get client settings
+AUDIT: user=client_admin, client_id=1, action=get_roles, details=List roles
+AUDIT: user=client_admin, client_id=1, action=get_screens, details=List all screens
+AUDIT: user=client_admin, client_id=1, action=get_role_permissions, details=List role permissions
+AUDIT: user=client_admin, client_id=1, action=get_roles, details=List roles
+AUDIT: user=client_admin, client_id=1, action=get_clients, details=List clients
+AUDIT: user=client_admin, client_id=1, action=get_roles, details=List roles
+AUDIT: user=client_admin, client_id=1, action=get_users, details=List users
