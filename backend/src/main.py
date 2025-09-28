@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from utils import verify_password, get_password_hash, create_access_token, get_current_role
 from fastapi import FastAPI
 from database import get_db
+from deployment_config import settings
 # Import all models to ensure relationships are initialized
 from models.user import User
 from models.role import Role
@@ -28,12 +29,19 @@ from routers.audit import router as audit_router
 from routers.import_errors import router as import_errors_router
 from routers.screen_permissions import router as screen_permissions_router
 
-app = FastAPI()
+app = FastAPI(
+    title="SpendPlatform v2 API",
+    description="Enterprise Spend Management Platform",
+    version="2.0.0",
+    openapi_url=f"{settings.API_PREFIX}/openapi.json",
+    docs_url="/docs",
+    redoc_url="/redoc"
+)
 
-# Add CORS middleware
+# Add CORS middleware with environment-aware origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3001", "http://127.0.0.1:3001"],
+    allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -55,6 +63,42 @@ app.include_router(reporting_router)
 app.include_router(audit_router)
 app.include_router(import_errors_router)
 app.include_router(screen_permissions_router)
+
+# Health check endpoint for load balancers and monitoring
+@app.get("/health")
+def health_check():
+    """Health check endpoint for deployment monitoring"""
+    return {
+        "status": "healthy",
+        "service": "spendplatform-backend",
+        "deployment_mode": settings.DEPLOYMENT_MODE,
+        "environment": settings.ENVIRONMENT,
+        "instance": settings.SERVICE_INSTANCE
+    }
+
+# Service discovery endpoint for dynamic configuration
+@app.get("/api/v1/services/discovery")
+def service_discovery():
+    """Service discovery endpoint for frontend configuration"""
+    return {
+        "api_url": settings.get_service_url("backend"),
+        "frontend_url": settings.get_service_url("frontend"),
+        "deployment_mode": settings.DEPLOYMENT_MODE,
+        "cors_origins": settings.CORS_ORIGINS
+    }
+
+# Configuration endpoint for debugging (non-sensitive info only)
+@app.get("/api/v1/config")
+def get_config():
+    """Get non-sensitive configuration information"""
+    return {
+        "deployment_mode": settings.DEPLOYMENT_MODE,
+        "environment": settings.ENVIRONMENT,
+        "api_prefix": settings.API_PREFIX,
+        "monitoring_enabled": settings.ENABLE_MONITORING,
+        "max_file_size": settings.MAX_FILE_SIZE,
+        "jwt_expire_minutes": settings.JWT_EXPIRE_MINUTES
+    }
 
 # Register /token route on the correct app instance
 @app.post("/token", summary="OAuth2 login and JWT token generation")
