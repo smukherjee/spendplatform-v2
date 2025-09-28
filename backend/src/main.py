@@ -82,6 +82,36 @@ def health_check():
         "instance": settings.SERVICE_INSTANCE
     }
 
+# Simple test endpoint for performance testing (no auth required)
+@app.get("/api/test/users")  
+def users_test_endpoint(skip: int = 0, limit: int = 25, db: Session = Depends(get_db)):
+    """Test endpoint for performance comparison without authentication"""
+    from models.user import User
+    
+    users = db.query(User).offset(skip).limit(limit).all()
+    total = db.query(User).count()
+    
+    # Convert to simple response format
+    items = []
+    for user in users:
+        user_roles = [role.name for role in user.roles] if user.roles else []
+        items.append({
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "client_id": user.client_id,
+            "personalisation": user.personalisation,
+            "roles": user_roles
+        })
+    
+    return {
+        "items": items,
+        "total": total,
+        "skip": skip,
+        "limit": limit,
+        "has_next": (skip + limit < total)
+    }
+
 # Service discovery endpoint for dynamic configuration
 @app.get("/api/v1/services/discovery")
 def service_discovery():

@@ -262,3 +262,34 @@ def reset_user_password(id: int, password_data: PasswordReset, role: str = Depen
     db.commit()
     
     return {"message": "Password reset successfully"}
+
+@router.get("/test", summary="Test endpoint for performance testing")
+def get_users_test(
+    skip: int = 0, 
+    limit: int = 25, 
+    db: Session = Depends(get_db)
+):
+    """Simple test endpoint without authentication for performance comparison"""
+    users = db.query(User).offset(skip).limit(limit).all()
+    total = db.query(User).count()
+    
+    # Convert to simple response format
+    items = []
+    for user in users:
+        user_roles = [role.name for role in user.roles] if user.roles else []
+        items.append({
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "client_id": user.client_id,
+            "personalisation": user.personalisation,
+            "roles": user_roles
+        })
+    
+    return {
+        "items": items,
+        "total": total,
+        "skip": skip,
+        "limit": limit,
+        "has_next": (skip + limit < total)
+    }

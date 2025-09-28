@@ -1,0 +1,232 @@
+[
+  {
+    "endpoint": "/users?limit=25",
+    "test_config": "Single User",
+    "sync": {
+      "success_rate": 0.0,
+      "avg_response_ms": 0,
+      "p95_response_ms": 0,
+      "requests_per_sec": 0,
+      "total_time": 0.06781816482543945
+    },
+    "async": {
+      "success_rate": 100.0,
+      "avg_response_ms": 2.65,
+      "p95_response_ms": 16.23,
+      "requests_per_sec": 289.25,
+      "total_time": 0.03
+    },
+    "improvements": {
+      "response_time_pct": 0,
+      "throughput_pct": 0,
+      "success_rate_diff": 100.0
+    }
+  },
+  {
+    "endpoint": "/users?limit=25",
+    "test_config": "Light Load",
+    "sync": {
+      "success_rate": 0.0,
+      "avg_response_ms": 0,
+      "p95_response_ms": 0,
+      "requests_per_sec": 0,
+      "total_time": 0.054247140884399414
+    },
+    "async": {
+      "success_rate": 100.0,
+      "avg_response_ms": 10.06,
+      "p95_response_ms": 38.19,
+      "requests_per_sec": 310.6,
+      "total_time": 0.06
+    },
+    "improvements": {
+      "response_time_pct": 0,
+      "throughput_pct": 0,
+      "success_rate_diff": 100.0
+    }
+  },
+  {
+    "endpoint": "/users?limit=25",
+    "test_config": "Moderate Load",
+    "sync": {
+      "success_rate": 0.0,
+      "avg_response_ms": 0,
+      "p95_response_ms": 0,
+      "requests_per_sec": 0,
+      "total_time": 0.09358692169189453
+    },
+    "async": {
+      "success_rate": 100.0,
+      "avg_response_ms": 19.6,
+      "p95_response_ms": 74.71,
+      "requests_per_sec": 291.7,
+      "total_time": 0.1
+    },
+    "improvements": {
+      "response_time_pct": 0,
+      "throughput_pct": 0,
+      "success_rate_diff": 100.0
+    }
+  },
+  {
+    "endpoint": "/users?limit=25",
+    "test_config": "Heavy Load",
+    "sync": {
+      "success_rate": 0.0,
+      "avg_response_ms": 0,
+      "p95_response_ms": 0,
+      "requests_per_sec": 0,
+      "total_time": 0.2489781379699707
+    },
+    "async": {
+      "success_rate": 100.0,
+      "avg_response_ms": 78.25,
+      "p95_response_ms": 214.0,
+      "requests_per_sec": 192.58,
+      "total_time": 0.26
+    },
+    "improvements": {
+      "response_time_pct": 0,
+      "throughput_pct": 0,
+      "success_rate_diff": 100.0
+    }
+  },
+  {
+    "endpoint": "/users?limit=25",
+    "test_config": "Stress Test",
+    "sync": {
+      "success_rate": 0.0,
+      "avg_response_ms": 0,
+      "p95_response_ms": 0,
+      "requests_per_sec": 0,
+      "total_time": 0.4431893825531006
+    },
+    "async": {
+      "success_rate": 100.0,
+      "avg_response_ms": 250.8,
+      "p95_response_ms": 438.44,
+      "requests_per_sec": 104.48,
+      "total_time": 0.48
+    },
+    "improvements": {
+      "response_time_pct": 0,
+      "throughput_pct": 0,
+      "success_rate_diff": 100.0
+    }
+  },
+  {
+    "endpoint": "/users?limit=100",
+    "test_config": "Single User",
+    "sync": {
+      "success_rate": 0.0,
+      "avg_response_ms": 0,
+      "p95_response_ms": 0,
+      "requests_per_sec": 0,
+      "total_time": 0.018615007400512695
+    },
+    "async": {
+      "success_rate": 100.0,
+      "avg_response_ms": 2.13,
+      "p95_response_ms": 9.54,
+      "requests_per_sec": 342.69,
+      "total_time": 0.03
+    },
+    "improvements": {
+      "response_time_pct": 0,
+      "throughput_pct": 0,
+      "success_rate_diff": 100.0
+    }
+  },
+  {
+    "endpoint": "/users?limit=100",
+    "test_config": "Light Load",
+    "sync": {
+      "success_rate": 0.0,
+      "avg_response_ms": 0,
+      "p95_response_ms": 0,
+      "requests_per_sec": 0,
+      "total_time": 0.05128884315490723
+    },
+    "async": {
+      "success_rate": 100.0,
+      "avg_response_ms": 25.13,
+      "p95_response_ms": 103.77,
+      "requests_per_sec": 160.7,
+      "total_time": 0.12
+    },
+    "improvements": {
+      "response_time_pct": 0,
+      "throughput_pct": 0,
+      "success_rate_diff": 100.0
+    }
+  },
+  {
+    "endpoint": "/users?limit=100",
+    "test_config": "Moderate Load",
+    "sync": {
+      "success_rate": 0.0,
+      "avg_response_ms": 0,
+      "p95_response_ms": 0,
+      "requests_per_sec": 0,
+      "total_time": 0.09923577308654785
+    },
+    "async": {
+      "success_rate": 100.0,
+      "avg_response_ms": 18.77,
+      "p95_response_ms": 77.02,
+      "requests_per_sec": 298.08,
+      "total_time": 0.1
+    },
+    "improvements": {
+      "response_time_pct": 0,
+      "throughput_pct": 0,
+      "success_rate_diff": 100.0
+    }
+  },
+  {
+    "endpoint": "/users?limit=100",
+    "test_config": "Heavy Load",
+    "sync": {
+      "success_rate": 0.0,
+      "avg_response_ms": 0,
+      "p95_response_ms": 0,
+      "requests_per_sec": 0,
+      "total_time": 0.24001097679138184
+    },
+    "async": {
+      "success_rate": 100.0,
+      "avg_response_ms": 76.37,
+      "p95_response_ms": 210.68,
+      "requests_per_sec": 194.58,
+      "total_time": 0.26
+    },
+    "improvements": {
+      "response_time_pct": 0,
+      "throughput_pct": 0,
+      "success_rate_diff": 100.0
+    }
+  },
+  {
+    "endpoint": "/users?limit=100",
+    "test_config": "Stress Test",
+    "sync": {
+      "success_rate": 0.0,
+      "avg_response_ms": 0,
+      "p95_response_ms": 0,
+      "requests_per_sec": 0,
+      "total_time": 0.4368889331817627
+    },
+    "async": {
+      "success_rate": 100.0,
+      "avg_response_ms": 256.72,
+      "p95_response_ms": 436.31,
+      "requests_per_sec": 103.24,
+      "total_time": 0.48
+    },
+    "improvements": {
+      "response_time_pct": 0,
+      "throughput_pct": 0,
+      "success_rate_diff": 100.0
+    }
+  }
+]

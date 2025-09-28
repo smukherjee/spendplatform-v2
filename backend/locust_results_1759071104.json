@@ -1,0 +1,12 @@
+{
+  "timestamp": "2025-09-28 20:21:44",
+  "total_requests": 1054,
+  "successful_requests": 50,
+  "failed_requests": 1004,
+  "success_rate": 4.743833017077799,
+  "requests_per_second": 18.020133692233532,
+  "avg_response_time_ms": 4.187348231504382,
+  "p50_response_time_ms": 3.868458999932045,
+  "p95_response_time_ms": 7.95399999969959,
+  "test_duration_seconds": 58.490132093429565
+}
