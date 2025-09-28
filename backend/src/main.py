@@ -64,13 +64,22 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db:
 	if not user or not user.verify_password(form_data.password):
 		raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect username or password")
 	
-	# Simple role mapping based on username for now (until relationships are fixed)
-	role_mapping = {
-		"superadmin": "superadmin",
-		"clientadmin": "client_admin", 
-		"user": "user"
-	}
-	user_role = role_mapping.get(str(user.username), "user")
+	# Get user's actual roles from database relationships
+	user_roles = []
+	if hasattr(user, 'roles') and user.roles:
+		user_roles = [role.name for role in user.roles]
+	
+	# Determine primary role for JWT token (use first role or default to 'user')
+	if user_roles:
+		user_role = user_roles[0]  # Use first role as primary
+	else:
+		# Fallback role mapping for users without assigned roles
+		role_mapping = {
+			"superadmin": "superadmin",
+			"clientadmin": "client_admin", 
+			"user": "user"
+		}
+		user_role = role_mapping.get(str(user.username), "user")
 	
 	token_data = {
 		"sub": user.username,

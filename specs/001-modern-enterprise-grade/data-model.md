@@ -59,28 +59,28 @@ All entities include a `client_id` field for multi-tenancy. PK/FK constraints ar
 ### 2. User
 
 - id (PK)
-- username
-- email
+- username (unique)
+- email (unique)
 - password_hash
 - roles (many-to-many with Role)
 - client_id (FK to Client)
 - personalisation (JSON: theme, i18n, etc.)
-- created_at
-- updated_at
-- created_by (FK to User)
-- updated_by (FK to User)
-- is_deleted (soft deletion flag)
+- screen_permissions (relationship to UserScreenPermission)
+
+**Note**: User model currently does NOT inherit from AuditMixin (missing audit fields: created_at, updated_at, created_by, updated_by, is_deleted). This should be added for compliance.
 
 ### 3. Role
 
 - id (PK)
 - name (e.g., superadmin, client_admin, user)
 - permissions (JSON)
-- created_at
-- updated_at
-- created_by (FK to User)
-- updated_by (FK to User)
-- is_deleted (soft deletion flag)
+- users (many-to-many relationship with User)
+- screen_permissions (relationship to RoleScreenPermission)
+- created_at (AuditMixin)
+- updated_at (AuditMixin)
+- created_by (FK to User, AuditMixin)
+- updated_by (FK to User, AuditMixin)
+- is_deleted (soft deletion flag, AuditMixin)
 
 ### 4. BusinessUnit
 
@@ -197,7 +197,59 @@ All entities include a `client_id` field for multi-tenancy. PK/FK constraints ar
 - updated_by (FK to User)
 - is_deleted (soft deletion flag)
 
-### 12. ImportError
+### 12. Screen
+
+- id (PK)
+- name (unique, e.g., "Dashboard", "Invoices", "Users")
+- route (unique, e.g., "/dashboard", "/invoices", "/users")
+- description (text)
+- category (e.g., "Financial", "Admin", "Reporting")
+- is_active (boolean, default True)
+- role_permissions (relationship to RoleScreenPermission)
+- user_permissions (relationship to UserScreenPermission)
+- created_at (AuditMixin)
+- updated_at (AuditMixin)
+- created_by (FK to User, AuditMixin)
+- updated_by (FK to User, AuditMixin)
+- is_deleted (soft deletion flag, AuditMixin)
+
+### 13. UserScreenPermission
+
+- id (PK)
+- user_id (FK to User)
+- screen_id (FK to Screen)
+- allow_access (boolean, default False)
+- created_at (AuditMixin)
+- updated_at (AuditMixin)
+- created_by (FK to User, AuditMixin)
+- updated_by (FK to User, AuditMixin)
+- is_deleted (soft deletion flag, AuditMixin)
+
+### 14. RoleScreenPermission
+
+- id (PK)
+- role_id (FK to Role)
+- screen_id (FK to Screen)
+- client_id (FK to Client)
+- allow_access (boolean, default False)
+- created_at (AuditMixin)
+- updated_at (AuditMixin)
+- created_by (FK to User, AuditMixin)
+- updated_by (FK to User, AuditMixin)
+- is_deleted (soft deletion flag, AuditMixin)
+
+### 15. AuditLog
+
+- id (PK)
+- user (string)
+- client_id (integer, nullable)
+- action (string)
+- details (string, nullable)
+- timestamp (datetime, default utcnow)
+
+**Note**: AuditLog does NOT use AuditMixin (separate from entity audit fields)
+
+### 16. ImportError
 
 - id (PK)
 - invoice_id (FK, nullable)
@@ -253,8 +305,16 @@ All entities include a `client_id` field for multi-tenancy. PK/FK constraints ar
 - `GET /users` (client_admin, superadmin)
 - `POST /users` (client_admin, superadmin)
 - `GET /users/{id}` (self, client_admin, superadmin)
-- `PUT /users/{id}` (self, client_admin, superadmin)
+- `PUT /users/{id}` (self, client_admin, superadmin) - Uses UserUpdate schema for partial updates
+- `PATCH /users/{id}/password` (self, client_admin, superadmin) - Password reset endpoint
 - `DELETE /users/{id}` (client_admin, superadmin, soft delete)
+
+**Schemas**:
+- `UserBase`: username, email, client_id, personalisation
+- `UserCreate`: extends UserBase + password (required)
+- `UserUpdate`: all fields optional (username, email, client_id, personalisation, password)
+- `UserRead`: extends UserBase + id, roles
+- `PasswordReset`: password field only
 
 #### 3. Role
 
@@ -334,6 +394,28 @@ All entities include a `client_id` field for multi-tenancy. PK/FK constraints ar
 - `GET /settings` (client_admin)
 - `PUT /settings` (client_admin)
 
+#### 13. ScreenPermissions
+
+- `GET /screen-permissions` (client_admin, superadmin)
+- `POST /screen-permissions` (client_admin, superadmin)
+- `GET /screen-permissions/{id}` (client_admin, superadmin)
+- `PUT /screen-permissions/{id}` (client_admin, superadmin)
+- `DELETE /screen-permissions/{id}` (client_admin, superadmin)
+
+#### 14. ImportErrors
+
+- `GET /import-errors` (client_admin, user)
+- `POST /import-errors` (system generated)
+- `GET /import-errors/{id}` (client_admin, user)
+- `PUT /import-errors/{id}` (client_admin) - Mark as resolved
+- `DELETE /import-errors/{id}` (client_admin)
+
+#### 15. Audit
+
+- `GET /audit` (client_admin, superadmin)
+- `POST /audit` (system generated)
+- `GET /audit/{id}` (client_admin, superadmin)
+
 ### Schemas (Pydantic)
 
 - All entities have matching Pydantic schemas for request/response.
@@ -376,9 +458,36 @@ All entities include a `client_id` field for multi-tenancy. PK/FK constraints ar
 - Audit logs are stored separately for compliance.
 - Logging configuration is managed via environment variables and client settings.
 
+## Implementation Status
+
+### ✅ Completed
+- All SQLAlchemy models implemented
+- AuditMixin with audit fields (created_at, updated_at, created_by, updated_by, is_deleted)
+- All API endpoints implemented with RBAC
+- Pydantic schemas for request/response validation
+- Multi-tenancy with client_id scoping
+- Password hashing with Argon2
+- Screen-level permission system
+- Import error tracking system
+- Comprehensive logging and audit trails
+
+### ⚠️ Current Limitations
+1. **User Model Missing Audit Fields**: User model does not inherit from AuditMixin
+2. **Partial Update Support**: Recently added UserUpdate schema for proper partial updates
+3. **Screen Permissions**: Advanced permission system beyond basic roles
+4. **Import Error Resolution**: Tracking and resolution workflow for data import issues
+
+### 🔄 Recent Changes
+- Added `UserUpdate` schema for partial user updates (no password required)
+- Implemented screen-level permissions system
+- Enhanced import error tracking with resolution workflow
+- Updated PUT /users/{id} endpoint to use UserUpdate schema
+- Added PATCH /users/{id}/password for dedicated password updates
+
 ## Next Steps
 
-- Implement SQLAlchemy models for each entity
-- Enforce PK/FK constraints and relationships
-- Add audit fields and logging hooks
-- Prepare Alembic migration scripts
+- Add AuditMixin inheritance to User model
+- Implement field-level encryption for sensitive data
+- Add composite unique constraints for multi-tenant isolation
+- Enhance reporting endpoints with dynamic report generation
+- Implement data retention and compliance policies

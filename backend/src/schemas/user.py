@@ -9,6 +9,7 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str
+    roles: Optional[List[str]] = []
 
 class UserUpdate(BaseModel):
     username: Optional[str] = None
@@ -16,6 +17,7 @@ class UserUpdate(BaseModel):
     client_id: Optional[int] = None
     personalisation: Optional[dict] = None
     password: Optional[str] = None
+    roles: Optional[List[str]] = None
 
 class UserRead(UserBase):
     id: int

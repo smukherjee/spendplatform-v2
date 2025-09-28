@@ -60,7 +60,7 @@ export default function NavBar() {
   const hasAccess = (screen: string) => {
     // If permissions are still loading, show only essential navigation based on role
     if (loading) {
-      // Always show dashboard
+      // Always show dashboard - accessible to all authenticated users
       if (screen === '/dashboard') return true;
       
       // Show basic screens for all roles

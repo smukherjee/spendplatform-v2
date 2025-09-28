@@ -13,6 +13,7 @@ import { confirmDialog, ConfirmDialog } from 'primereact/confirmdialog';
 import { FilterMatchMode } from 'primereact/api';
 import { fetchUsers, createUser, updateUser, deleteUser, fetchClients, fetchRoles, resetUserPassword, Client, Role, createTestToken } from '../services/api';
 import { useMobileDetection } from '../hooks/useMobileDetection';
+import { useAuth } from '../contexts/AuthContext';
 import { UserTableErrorBoundary } from '../components/UserTableErrorBoundary';
 import { 
   createDebouncer, 
@@ -23,13 +24,19 @@ import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import './Users.css';
 
+// Frontend User interface - maps to backend UserRead/UserCreate/UserUpdate schemas
+// Field Mapping:
+// - name: Display field (mapped from backend username)
+// - username: Backend field for authentication
+// - client_name: Display field (resolved from client_id via clients lookup)
+// - All other fields map directly to backend schema
 export interface User {
   id: string | number;
-  name: string;
-  username?: string;
+  name: string; // Mapped from backend 'username' field
+  username?: string; // Backend field
   email: string;
   client_id?: number;
-  client_name?: string;
+  client_name?: string; // Resolved from client_id
   roles?: string[];
   personalisation?: any;
   password?: string; // For new user creation only
@@ -81,6 +88,9 @@ export default function Users() {
   
   // Use custom mobile detection hook
   const { isMobile, isTablet, screenSize, touchDevice, deviceInfo } = useMobileDetection();
+  
+  // Get current authenticated user for role change notifications
+  const { user: currentUser } = useAuth();
 
   // Load clients function
   const loadClients = useCallback(async () => {
@@ -461,7 +471,8 @@ export default function Users() {
         email: rowData.email.trim(),
         password: rowData.password,
         client_id: parseInt(rowData.client_id.toString()),
-        personalisation: rowData.personalisation || null
+        personalisation: rowData.personalisation || null,
+        roles: rowData.roles || []
       };
       
       console.log('📤 Data being sent to backend:', {
@@ -475,9 +486,24 @@ export default function Users() {
       const newUser = await createUser(userCreateData);
       console.log('✅ API call successful, received:', newUser);
       
-      // Replace temporary row with real user data
+      // Process the new user to maintain consistent field mapping
+      const client = clients.find(c => c.id === newUser.client_id);
+      const processedNewUser = {
+        id: newUser.id,
+        name: newUser.username, // Map username to name for display
+        username: newUser.username,
+        email: newUser.email,
+        client_id: newUser.client_id,
+        client_name: client?.name || `Client ${newUser.client_id}`,
+        personalisation: newUser.personalisation,
+        roles: newUser.roles || []
+      };
+      
+      console.log('✅ Processed new user:', processedNewUser);
+      
+      // Replace temporary row with processed user data
       const updatedUsers = users.map(u => 
-        u.id === 'temp-new' ? newUser : u
+        u.id === 'temp-new' ? processedNewUser : u
       );
       setUsers(updatedUsers);
       
@@ -617,7 +643,8 @@ export default function Users() {
             email: _user.email?.trim(),
             password: _user.password,
             client_id: parseInt(_user.client_id?.toString() || '0'),
-            personalisation: _user.personalisation || null
+            personalisation: _user.personalisation || null,
+            roles: _user.roles || []
           };
           
           console.log('📤 SAVEUSER CREATE - Data being sent to backend:', {
@@ -626,7 +653,21 @@ export default function Users() {
           });
           
           const newUser = await createUser(userCreateData);
-          _users.push(newUser);
+          
+          // Process the new user to maintain consistent field mapping
+          const client = clients.find(c => c.id === newUser.client_id);
+          const processedNewUser = {
+            id: newUser.id,
+            name: newUser.username, // Map username to name for display
+            username: newUser.username,
+            email: newUser.email,
+            client_id: newUser.client_id,
+            client_name: client?.name || `Client ${newUser.client_id}`,
+            personalisation: newUser.personalisation,
+            roles: newUser.roles || []
+          };
+          
+          _users.push(processedNewUser);
           toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'User Created', life: 3000 });
         }
 
@@ -863,35 +904,110 @@ export default function Users() {
       
       // Filter data to match backend UserUpdate schema (for PUT requests)
       // Omit password field entirely for inline edits
+      
+      // Debug: Log all available fields in newData
+      console.log('🔍 INLINE EDIT - ALL newData fields:', Object.keys(newData));
+      console.log('🔍 INLINE EDIT - newData.name:', newData.name);
+      console.log('🔍 INLINE EDIT - newData.username:', newData.username);
+      
+      // Use name field as the primary source since that's what the user edits
+      // The name field contains the updated value from the editor
+      const usernameValue = newData.name?.trim() || newData.username?.trim() || '';
+      
+      if (!usernameValue) {
+        toast.current?.show({ 
+          severity: 'error', 
+          summary: 'Validation Error', 
+          detail: 'Username cannot be empty', 
+          life: 3000 
+        });
+        return;
+      }
+      
       const updateData = {
-        username: newData.username || newData.name,
+        username: usernameValue,
         email: newData.email,
         client_id: newData.client_id,
-        personalisation: newData.personalisation || null
+        personalisation: newData.personalisation || null,
+        roles: newData.roles || []
       };
       
       console.log('🔍 INLINE EDIT - Original data:', newData);
       console.log('📤 INLINE EDIT - Filtered data being sent:', updateData);
+      console.log('👤 INLINE EDIT - Username value used:', usernameValue);
+      console.log('🔄 INLINE EDIT - Will update user ID:', newData.id);
       
       // Update user via API
       const updatedUser = await updateUser(newData.id, updateData);
       
-      // Update local state
-      let _users = [...users];
-      _users[index] = updatedUser;
-      setUsers(_users);
+      // Process the updated user in the same way as initial load
+      const client = clients.find(c => c.id === updatedUser.client_id);
+      const processedUpdatedUser = {
+        id: updatedUser.id,
+        name: updatedUser.username, // Map username to name for display
+        username: updatedUser.username, // Keep username field synced
+        email: updatedUser.email,
+        client_id: updatedUser.client_id,
+        client_name: client?.name || `Client ${updatedUser.client_id}`,
+        personalisation: updatedUser.personalisation,
+        roles: updatedUser.roles || []
+      };
       
-      toast.current?.show({ 
-        severity: 'success', 
-        summary: 'Success', 
-        detail: 'User updated successfully', 
-        life: 3000 
+      console.log('✅ INLINE EDIT - Backend response:', updatedUser);
+        console.log('✅ INLINE EDIT - Processed updated user:', processedUpdatedUser);
+        console.log('🔄 INLINE EDIT - Username mapping: backend.username =', updatedUser.username, '→ frontend.name =', processedUpdatedUser.name);
+        
+        // Check if roles were updated
+        const originalRoles = users.find(u => u.id === updatedUser.id)?.roles || [];
+        const newRoles = processedUpdatedUser.roles || [];
+        const rolesChanged = JSON.stringify(originalRoles.sort()) !== JSON.stringify(newRoles.sort());
+        
+        if (rolesChanged) {
+          console.log('🎭 ROLES CHANGED - Original:', originalRoles, '→ New:', newRoles);
+        }      // Update local state using functional update to avoid race conditions
+      setUsers(currentUsers => {
+        const updatedUsers = [...currentUsers];
+        const userIndex = updatedUsers.findIndex(u => u.id === processedUpdatedUser.id);
+        
+        console.log('🔄 INLINE EDIT - Finding user in array:', {
+          searchingForId: processedUpdatedUser.id,
+          foundIndex: userIndex,
+          totalUsers: updatedUsers.length,
+          userIds: updatedUsers.map(u => u.id)
+        });
+        
+        if (userIndex >= 0) {
+          console.log('🔄 INLINE EDIT - Before update:', updatedUsers[userIndex]);
+          updatedUsers[userIndex] = processedUpdatedUser;
+          console.log('🔄 INLINE EDIT - After update:', updatedUsers[userIndex]);
+        } else {
+          console.error('❌ INLINE EDIT - User not found in array for update!');
+        }
+        
+        return updatedUsers;
       });
       
-      // Clear editing state for this row
-      const newEditingRows = {...editingRows};
-      delete newEditingRows[newData.id];
-      setEditingRows(newEditingRows);
+        // Show appropriate success message
+        if (rolesChanged) {
+          toast.current?.show({ 
+            severity: 'success', 
+            summary: 'Roles Updated', 
+            detail: `User roles updated. ${updatedUser.username === currentUser?.username ? 'Please log out and log back in to refresh your permissions.' : 'User will need to log out and log back in to refresh their permissions.'}`, 
+            life: 8000 
+          });
+        } else {
+          toast.current?.show({ 
+            severity: 'success', 
+            summary: 'Success', 
+            detail: 'User updated successfully', 
+            life: 3000 
+          });
+        }      // Clear editing state for this row using functional update
+      setEditingRows(currentEditingRows => {
+        const newEditingRows = {...currentEditingRows};
+        delete newEditingRows[newData.id];
+        return newEditingRows;
+      });
     } catch (error: any) {
       toast.current?.show({ 
         severity: 'error', 
@@ -906,16 +1022,29 @@ export default function Users() {
 
   // Enhanced cell editor components
   const textEditor = (options: ColumnEditorOptions) => {
+    console.log('🔤 TEXT EDITOR - Field:', options.field, 'Current value:', options.value, 'Row ID:', options.rowData.id);
+    
     return (
       <InputText 
         type="text" 
         value={options.value || ''} 
         onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
           const newValue = e.target.value;
+          console.log('🔤 TEXT EDITOR - New value entered:', newValue, 'for field:', options.field);
+          
+          // Always call the primary editor callback
           options.editorCallback!(newValue);
+          
+          // For existing users editing the name field, also update username for consistency
+          if (options.field === 'name' && options.rowData.id !== 'temp-new') {
+            console.log('🔤 TEXT EDITOR - Updating name field for existing user, ensuring username sync');
+            // The editorCallback should handle this, but let's ensure consistency
+            // The actual update will be handled in onRowEditComplete
+          }
           
           // For new users, also update username field when name changes
           if (options.rowData.id === 'temp-new' && options.field === 'name') {
+            console.log('🔤 TEXT EDITOR - Updating username for temp new user');
             const updatedUsers = users.map(user => {
               if (user.id === 'temp-new') {
                 return { ...user, username: newValue };
@@ -963,17 +1092,40 @@ export default function Users() {
   };
 
   const clientEditor = (options: ColumnEditorOptions) => {
+    // Ensure we have a numeric value for comparison
+    const currentValue = typeof options.value === 'string' ? parseInt(options.value) : options.value;
+    
+    console.log('🏢 Client Editor - Current value:', currentValue, 'Type:', typeof currentValue);
+    console.log('🏢 Available clients:', clients.map(c => ({ id: c.id, name: c.name, idType: typeof c.id })));
+    
     return (
       <Dropdown 
-        value={options.value} 
+        value={currentValue} 
         options={clients}
         optionLabel="name"
         optionValue="id"
         onChange={(e) => {
-          // Update both client_id and client_name
+          console.log('🏢 Client selected:', e.value, 'Type:', typeof e.value);
+          
+          // Update client_id in the editor
           options.editorCallback!(e.value);
-          // Note: For inline editing, we'd need to update the client_name too
-          // This is handled in the onRowEditComplete function
+          
+          // Also update the client_name in the row data immediately
+          if (e.value && options.rowData) {
+            const selectedClient = clients.find(c => c.id === e.value);
+            console.log('🏢 Selected client object:', selectedClient);
+            
+            if (selectedClient) {
+              // Update the users array to reflect the client_name change immediately
+              const updatedUsers = users.map(user => {
+                if (user.id === options.rowData.id) {
+                  return { ...user, client_id: e.value, client_name: selectedClient.name };
+                }
+                return user;
+              });
+              setUsers(updatedUsers);
+            }
+          }
         }} 
         placeholder="Select Client"
         className="w-full"
@@ -1341,7 +1493,7 @@ export default function Users() {
           ></Column>
           <Column 
             key="client_name"
-            field="client_name" 
+            field="client_id" 
             header="Client" 
             sortable 
             filter 

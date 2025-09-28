@@ -92,6 +92,25 @@ def post_users(user: UserCreate, role: str = Depends(get_current_role), client_i
         db.refresh(db_user)
         
         logger.info(f"✅ User created successfully with ID: {db_user.id}")
+        
+        # Handle roles assignment after user is created
+        if hasattr(user, 'roles') and user.roles:
+            logger.info(f"👑 Processing roles for user: {user.roles}")
+            from models.role import Role
+            
+            # Find roles by name
+            role_objects = db.query(Role).filter(Role.name.in_(user.roles)).all()
+            logger.info(f"👑 Found {len(role_objects)} roles in database")
+            
+            # Assign roles to user
+            db_user.roles = role_objects
+            
+            logger.info(f"💾 Committing role assignments...")
+            db.commit()
+            db.refresh(db_user)
+            
+            logger.info(f"✅ Roles assigned successfully: {[r.name for r in db_user.roles]}")
+        
     except Exception as e:
         logger.error(f"❌ Database operation failed: {str(e)}")
         db.rollback()
@@ -161,6 +180,15 @@ def put_user(id: int, user: UserUpdate, role: str = Depends(get_current_role), c
                 db_user.set_password(value)
         elif field == "client_id" and role != "superadmin":
             continue  # Don't allow client_id updates for non-superadmin
+        elif field == "roles":
+            if value is not None:  # Handle roles assignment
+                from models.role import Role
+                if isinstance(value, list):
+                    # Find roles by name
+                    role_objects = db.query(Role).filter(Role.name.in_(value)).all()
+                    db_user.roles = role_objects
+                else:
+                    db_user.roles = []  # Clear roles if not a list
         elif value is not None:  # Only update if value is provided
             setattr(db_user, field, value)
     
