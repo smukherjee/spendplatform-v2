@@ -11,11 +11,19 @@ router = APIRouter(prefix="/clients", tags=["Client"])
 
 @router.get("", response_model=List[ClientRead], summary="List all clients")
 def get_clients(role: str = Depends(get_current_role), client_id: int = Depends(get_client_id), db: Session = Depends(get_db)):
-    """Returns a list of all clients (superadmin only)."""
-    enforce_role(role, ["superadmin"])
+    """Returns a list of all clients (superadmin) or current client (client_admin)."""
+    enforce_role(role, ["superadmin", "client_admin"])
     log_audit(action="get_clients", user=role, client_id=client_id, details="List clients")
     
-    clients = db.query(Client).filter(Client.is_deleted == False).all()
+    if role == "superadmin":
+        clients = db.query(Client).filter(Client.is_deleted == False).all()
+    else:
+        # client_admin can only see their own client
+        clients = db.query(Client).filter(
+            Client.id == client_id,
+            Client.is_deleted == False
+        ).all()
+    
     return clients
 
 @router.post("", response_model=ClientRead, summary="Create a new client")

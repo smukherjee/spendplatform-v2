@@ -14,7 +14,7 @@ class User(Base):
     client_id = Column(Integer, ForeignKey('client.id'), nullable=False)
     personalisation = Column(JSON, nullable=True)
     roles = relationship('Role', secondary='user_role', back_populates='users')
-    screen_permissions = relationship('UserScreenPermission', back_populates='user', foreign_keys='UserScreenPermission.user_id')
+    # screen_permissions = relationship('UserScreenPermission', back_populates='user', foreign_keys='UserScreenPermission.user_id')
 
     def set_password(self, password: str):
         self.password_hash = ph.hash(password)

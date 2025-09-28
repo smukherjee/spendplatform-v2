@@ -6,6 +6,18 @@
 # Get the directory where this script is located (project root)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Kill any existing Node.js/React dev servers
+echo "🔄 Stopping any existing frontend servers..."
+pkill -f "node.*vite" 2>/dev/null || true
+pkill -f "npm.*dev" 2>/dev/null || true
+pkill -f "npm.*start" 2>/dev/null || true
+pkill -f "vite" 2>/dev/null || true
+pkill -f "react-scripts" 2>/dev/null || true
+pkill -f "next" 2>/dev/null || true
+
+# Wait a moment for processes to stop
+sleep 2
+
 # Check if frontend directory exists
 if [ ! -d "$SCRIPT_DIR/frontend" ]; then
     echo "❌ Frontend directory not found at $SCRIPT_DIR/frontend"

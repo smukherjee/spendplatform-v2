@@ -34,31 +34,10 @@ class RoleScreenPermissionWithDetails(RoleScreenPermissionRead):
     screen: Optional[ScreenRead] = None
     role_name: Optional[str] = None
 
-# User Screen Permission schemas
-class UserScreenPermissionBase(BaseModel):
-    user_id: int
-    screen_id: int
-    allow_access: bool = False
-
-class UserScreenPermissionCreate(UserScreenPermissionBase):
-    pass
-
-class UserScreenPermissionRead(UserScreenPermissionBase):
-    id: int
-    model_config = {"from_attributes": True}
-
-class UserScreenPermissionWithDetails(UserScreenPermissionRead):
-    screen: Optional[ScreenRead] = None
-    username: Optional[str] = None
-
-# Bulk permission update schemas
+# Bulk permission update schemas (role-based only)
 class BulkRolePermissionUpdate(BaseModel):
     role_id: int
     client_id: int
-    permissions: List[dict]  # [{"screen_id": 1, "allow_access": true}, ...]
-
-class BulkUserPermissionUpdate(BaseModel):
-    user_id: int
     permissions: List[dict]  # [{"screen_id": 1, "allow_access": true}, ...]
 
 # Permission check response

@@ -3,14 +3,14 @@ from typing import List, Optional
 from sqlalchemy.orm import Session, joinedload
 import time
 from database import get_db
-from models.screen_permission import Screen, RoleScreenPermission, UserScreenPermission
+from models.screen_permission import Screen, RoleScreenPermission
 from models.role import Role
 from models.user import User
 from schemas.screen_permission import (
     ScreenCreate, ScreenRead, 
     RoleScreenPermissionCreate, RoleScreenPermissionRead, RoleScreenPermissionWithDetails,
-    UserScreenPermissionCreate, UserScreenPermissionRead, UserScreenPermissionWithDetails,
-    BulkRolePermissionUpdate, BulkUserPermissionUpdate, PermissionCheckResponse
+
+    BulkRolePermissionUpdate, PermissionCheckResponse
 )
 from utils import get_current_role, get_client_id, get_current_user_id, enforce_role
 from logging_config import log_audit
@@ -124,84 +124,7 @@ def bulk_update_role_permissions(update: BulkRolePermissionUpdate, role: str = D
     
     return results
 
-# User permission endpoints
-@router.get("/user-permissions", response_model=List[UserScreenPermissionWithDetails], summary="Get user permissions")
-def get_user_permissions(user_id: Optional[int] = None, role: str = Depends(get_current_role), client_id: int = Depends(get_client_id), db: Session = Depends(get_db)):
-    """Get user-specific screen permissions."""
-    enforce_role(role, ["client_admin", "superadmin"])
-    log_audit(action="get_user_permissions", user=role, client_id=client_id, details=f"List user permissions for user {user_id}")
-    
-    query = db.query(UserScreenPermission).options(
-        joinedload(UserScreenPermission.screen),
-        joinedload(UserScreenPermission.user)
-    )
-    
-    if user_id:
-        query = query.filter(UserScreenPermission.user_id == user_id)
-    
-    # For non-superadmin, filter by client
-    if role != "superadmin":
-        query = query.join(User).filter(User.client_id == client_id)
-    
-    permissions = query.all()
-    
-    # Format response with additional details
-    result = []
-    for perm in permissions:
-        result.append({
-            **perm.__dict__,
-            "screen": perm.screen,
-            "username": perm.user.username if perm.user else None
-        })
-    
-    return result
-
-@router.post("/user-permissions/bulk", response_model=List[UserScreenPermissionRead], summary="Bulk update user permissions")
-def bulk_update_user_permissions(update: BulkUserPermissionUpdate, role: str = Depends(get_current_role), client_id: int = Depends(get_client_id), db: Session = Depends(get_db)):
-    """Bulk update user-specific permissions."""
-    enforce_role(role, ["client_admin", "superadmin"])
-    log_audit(action="bulk_update_user_permissions", user=role, client_id=client_id, details=f"Bulk update for user {update.user_id}")
-    
-    # Verify user exists and belongs to client (for non-superadmin)
-    user_query = db.query(User).filter(User.id == update.user_id)
-    if role != "superadmin":
-        user_query = user_query.filter(User.client_id == client_id)
-    
-    db_user = user_query.first()
-    if not db_user:
-        raise HTTPException(status_code=404, detail="User not found or access denied")
-    
-    results = []
-    for perm_data in update.permissions:
-        screen_id = perm_data["screen_id"]
-        allow_access = perm_data["allow_access"]
-        
-        # Check if permission already exists
-        existing = db.query(UserScreenPermission).filter(
-            UserScreenPermission.user_id == update.user_id,
-            UserScreenPermission.screen_id == screen_id
-        ).first()
-        
-        if existing:
-            existing.allow_access = allow_access
-            results.append(existing)
-        else:
-            new_perm = UserScreenPermission(
-                user_id=update.user_id,
-                screen_id=screen_id,
-                allow_access=allow_access
-            )
-            db.add(new_perm)
-            results.append(new_perm)
-    
-    db.commit()
-    for result in results:
-        db.refresh(result)
-    
-    # Log cache invalidation need
-    log_audit(action="permission_update_cache_invalidation", user=role, client_id=client_id, details=f"User permissions updated for user {update.user_id}, cache should be cleared")
-    
-    return results
+# Role-based permissions only - user permissions removed
 
 # Cache invalidation endpoint
 @router.post("/invalidate-cache", summary="Invalidate permission cache")
@@ -237,21 +160,7 @@ def check_screen_permission(screen_route: str, role: str = Depends(get_current_r
             message="Screen not found"
         )
     
-    # Check user-specific permissions first (these override role permissions)
-    user_perm = db.query(UserScreenPermission).filter(
-        UserScreenPermission.user_id == user_id,
-        UserScreenPermission.screen_id == screen.id
-    ).first()
-    
-    if user_perm:
-        return PermissionCheckResponse(
-            screen_route=screen_route,
-            has_access=bool(user_perm.allow_access),
-            source="user_override",
-            message="Access determined by user-specific permission"
-        )
-    
-    # Check role-based permissions
+    # Check role-based permissions (user-specific permissions removed)
     user = db.query(User).filter(User.id == user_id).first()
     if not user or not user.roles:
         return PermissionCheckResponse(

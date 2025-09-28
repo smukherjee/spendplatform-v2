@@ -50,6 +50,7 @@ def post_suppliers(supplier: SupplierCreate, role: str = Depends(get_current_rol
 @router.get("/{id}", response_model=SupplierRead, summary="Get a supplier by ID")
 def get_supplier(id: int, role: str = Depends(get_current_role), client_id: int = Depends(get_client_id), db: Session = Depends(get_db)):
     """Returns a supplier by ID, filtered by client if not superadmin."""
+    enforce_role(role, ["client_admin", "user", "superadmin"])
     log_audit(action="get_supplier", user=role, client_id=client_id, details=f"Get supplier id: {id}")
     
     # Query supplier based on role

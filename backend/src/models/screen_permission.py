@@ -15,7 +15,6 @@ class Screen(Base, AuditMixin):
     
     # Relationships
     role_permissions = relationship('RoleScreenPermission', back_populates='screen')
-    user_permissions = relationship('UserScreenPermission', back_populates='screen')
 
 class RoleScreenPermission(Base, AuditMixin):
     """Role-based permissions for screens by client"""
@@ -32,15 +31,3 @@ class RoleScreenPermission(Base, AuditMixin):
     screen = relationship('Screen', back_populates='role_permissions')
     client = relationship('Client')
 
-class UserScreenPermission(Base, AuditMixin):
-    """User-specific permissions that override role permissions"""
-    __tablename__ = 'user_screen_permission'
-    
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
-    screen_id = Column(Integer, ForeignKey('screen.id'), nullable=False)
-    allow_access = Column(Boolean, default=False)  # True = allow, False = deny
-    
-    # Relationships
-    user = relationship('User', foreign_keys=[user_id])
-    screen = relationship('Screen', back_populates='user_permissions')

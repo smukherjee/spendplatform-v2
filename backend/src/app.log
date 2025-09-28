@@ -3685,3 +3685,525 @@ AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Che
 AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /client-settings
 AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /screen-permissions
 AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /dashboard
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /dashboard
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /invoices
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /business-units
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /suppliers
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /roles
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /regions
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /users
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /clients
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /unit-of-measure
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /subcategories
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /import-errors
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /currency
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /reporting
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /settings
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /screen-permissions
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /client-settings
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /dashboard
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /dashboard
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /suppliers
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /roles
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /invoices
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /business-units
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /regions
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /subcategories
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /users
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /clients
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /currency
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /unit-of-measure
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /import-errors
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /client-settings
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /reporting
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /settings
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /screen-permissions
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /dashboard
+AUDIT: user=superadmin, client_id=1, action=get_clients, details=List clients
+AUDIT: user=superadmin, client_id=1, action=get_roles, details=List roles
+AUDIT: user=superadmin, client_id=1, action=get_users, details=List users
+AUDIT: user=superadmin, client_id=1, action=post_users, details=Create user: sujoy
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /dashboard
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /business-units
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /regions
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /invoices
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /suppliers
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /roles
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /users
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /unit-of-measure
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /currency
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /subcategories
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /clients
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /import-errors
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /reporting
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /settings
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /client-settings
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /dashboard
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /screen-permissions
+AUDIT: user=superadmin, client_id=1, action=get_users, details=List users
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /dashboard
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /invoices
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /suppliers
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /roles
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /regions
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /business-units
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /users
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /subcategories
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /clients
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /import-errors
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /currency
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /unit-of-measure
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /reporting
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /client-settings
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /settings
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /dashboard
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /screen-permissions
+AUDIT: user=superadmin, client_id=1, action=get_clients, details=List clients
+AUDIT: user=superadmin, client_id=1, action=get_roles, details=List roles
+AUDIT: user=superadmin, client_id=1, action=get_users, details=List users
+AUDIT: user=superadmin, client_id=1, action=put_user, details=Update user id: 19
+AUDIT: user=superadmin, client_id=1, action=put_user, details=Update user id: 5
+AUDIT: user=superadmin, client_id=1, action=put_user, details=Update user id: 1
+AUDIT: user=superadmin, client_id=1, action=put_user, details=Update user id: 2
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /invoices
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /dashboard
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /business-units
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /roles
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /regions
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /suppliers
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /users
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /clients
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /subcategories
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /unit-of-measure
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /import-errors
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /currency
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /reporting
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /client-settings
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /settings
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /screen-permissions
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /dashboard
+AUDIT: user=superadmin, client_id=1, action=get_clients, details=List clients
+AUDIT: user=superadmin, client_id=1, action=get_roles, details=List roles
+AUDIT: user=superadmin, client_id=1, action=get_users, details=List users
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /dashboard
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /roles
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /regions
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /invoices
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /business-units
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /suppliers
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /clients
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /users
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /subcategories
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /unit-of-measure
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /currency
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /import-errors
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /client-settings
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /reporting
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /settings
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /screen-permissions
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /dashboard
+AUDIT: user=client_admin, client_id=1, action=get_roles, details=List roles
+AUDIT: user=client_admin, client_id=1, action=get_users, details=List users
+AUDIT: user=client_admin, client_id=1, action=reset_password, details=Reset password for user id: 1
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /dashboard
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /suppliers
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /regions
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /invoices
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /business-units
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /roles
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /users
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /subcategories
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /clients
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /unit-of-measure
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /currency
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /import-errors
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /reporting
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /settings
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /client-settings
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /screen-permissions
+AUDIT: user=superadmin, client_id=1, action=check_screen_permission, details=Check access to /dashboard
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /dashboard
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /business-units
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /suppliers
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /invoices
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /regions
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /roles
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /subcategories
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /users
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /clients
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /unit-of-measure
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /currency
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /import-errors
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /client-settings
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /reporting
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /settings
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /screen-permissions
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /dashboard
+AUDIT: user=client_admin, client_id=1, action=get_roles, details=List roles
+AUDIT: user=client_admin, client_id=1, action=get_users, details=List users
+AUDIT: user=client_admin, client_id=1, action=put_user, details=Update user id: 19
+AUDIT: user=client_admin, client_id=1, action=put_user, details=Update user id: 2
+AUDIT: user=client_admin, client_id=1, action=reset_password, details=Reset password for user id: 1
+AUDIT: user=superadmin, client_id=0, action=get_clients, details=List clients
+AUDIT: user=client_admin, client_id=1, action=reset_password, details=Reset password for user id: 1
+AUDIT: user=client_admin, client_id=1, action=get_clients, details=List clients
+AUDIT: user=client_admin, client_id=1, action=post_users, details=Create user: testuser
+AUDIT: user=user, client_id=2, action=check_screen_permission, details=Check access to /dashboard
+AUDIT: user=user, client_id=2, action=check_screen_permission, details=Check access to /invoices
+AUDIT: user=user, client_id=2, action=check_screen_permission, details=Check access to /suppliers
+AUDIT: user=user, client_id=2, action=check_screen_permission, details=Check access to /regions
+AUDIT: user=user, client_id=2, action=check_screen_permission, details=Check access to /roles
+AUDIT: user=user, client_id=2, action=check_screen_permission, details=Check access to /business-units
+AUDIT: user=user, client_id=2, action=check_screen_permission, details=Check access to /users
+AUDIT: user=user, client_id=2, action=check_screen_permission, details=Check access to /clients
+AUDIT: user=user, client_id=2, action=check_screen_permission, details=Check access to /currency
+AUDIT: user=user, client_id=2, action=check_screen_permission, details=Check access to /import-errors
+AUDIT: user=user, client_id=2, action=check_screen_permission, details=Check access to /reporting
+AUDIT: user=user, client_id=2, action=check_screen_permission, details=Check access to /subcategories
+AUDIT: user=user, client_id=2, action=check_screen_permission, details=Check access to /unit-of-measure
+AUDIT: user=user, client_id=2, action=check_screen_permission, details=Check access to /settings
+AUDIT: user=user, client_id=2, action=check_screen_permission, details=Check access to /client-settings
+AUDIT: user=user, client_id=2, action=check_screen_permission, details=Check access to /screen-permissions
+AUDIT: user=user, client_id=2, action=check_screen_permission, details=Check access to /dashboard
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /dashboard
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /business-units
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /suppliers
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /regions
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /invoices
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /roles
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /users
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /subcategories
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /unit-of-measure
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /clients
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /currency
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /import-errors
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /reporting
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /settings
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /client-settings
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /screen-permissions
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /dashboard
+AUDIT: user=client_admin, client_id=1, action=get_clients, details=List clients
+AUDIT: user=client_admin, client_id=1, action=get_roles, details=List roles
+AUDIT: user=client_admin, client_id=1, action=get_users, details=List users
+AUDIT: user=superadmin, client_id=0, action=check_screen_permission, details=Check access to /dashboard
+AUDIT: user=superadmin, client_id=0, action=check_screen_permission, details=Check access to /invoices
+AUDIT: user=superadmin, client_id=0, action=check_screen_permission, details=Check access to /regions
+AUDIT: user=superadmin, client_id=0, action=check_screen_permission, details=Check access to /suppliers
+AUDIT: user=superadmin, client_id=0, action=check_screen_permission, details=Check access to /business-units
+AUDIT: user=superadmin, client_id=0, action=check_screen_permission, details=Check access to /roles
+AUDIT: user=superadmin, client_id=0, action=check_screen_permission, details=Check access to /users
+AUDIT: user=superadmin, client_id=0, action=check_screen_permission, details=Check access to /clients
+AUDIT: user=superadmin, client_id=0, action=check_screen_permission, details=Check access to /subcategories
+AUDIT: user=superadmin, client_id=0, action=check_screen_permission, details=Check access to /currency
+AUDIT: user=superadmin, client_id=0, action=check_screen_permission, details=Check access to /unit-of-measure
+AUDIT: user=superadmin, client_id=0, action=check_screen_permission, details=Check access to /import-errors
+AUDIT: user=superadmin, client_id=0, action=check_screen_permission, details=Check access to /settings
+AUDIT: user=superadmin, client_id=0, action=check_screen_permission, details=Check access to /dashboard
+AUDIT: user=superadmin, client_id=0, action=check_screen_permission, details=Check access to /screen-permissions
+AUDIT: user=superadmin, client_id=0, action=check_screen_permission, details=Check access to /client-settings
+AUDIT: user=superadmin, client_id=0, action=check_screen_permission, details=Check access to /reporting
+AUDIT: user=superadmin, client_id=0, action=get_clients, details=List clients
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /dashboard
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /invoices
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /suppliers
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /regions
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /business-units
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /roles
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /users
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /clients
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /unit-of-measure
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /subcategories
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /currency
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /import-errors
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /settings
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /client-settings
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /reporting
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /dashboard
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /screen-permissions
+AUDIT: user=client_admin, client_id=1, action=get_settings, details=Get client settings
+AUDIT: user=client_admin, client_id=1, action=get_settings, details=Get client settings
+AUDIT: user=client_admin, client_id=1, action=get_settings, details=Get client settings
+AUDIT: user=client_admin, client_id=1, action=get_roles, details=List roles
+AUDIT: user=client_admin, client_id=1, action=get_clients, details=List clients
+AUDIT: user=client_admin, client_id=1, action=get_roles, details=List roles
+AUDIT: user=client_admin, client_id=1, action=get_users, details=List users
+AUDIT: user=client_admin, client_id=1, action=get_regions, details=List regions
+AUDIT: user=client_admin, client_id=1, action=get_business_units, details=List business units
+AUDIT: user=client_admin, client_id=1, action=get_suppliers, details=List suppliers
+AUDIT: user=client_admin, client_id=1, action=get_invoices, details=List invoices
+AUDIT: user=user, client_id=2, action=check_screen_permission, details=Check access to /dashboard
+AUDIT: user=user, client_id=2, action=check_screen_permission, details=Check access to /invoices
+AUDIT: user=user, client_id=2, action=check_screen_permission, details=Check access to /regions
+AUDIT: user=user, client_id=2, action=check_screen_permission, details=Check access to /suppliers
+AUDIT: user=user, client_id=2, action=check_screen_permission, details=Check access to /roles
+AUDIT: user=user, client_id=2, action=check_screen_permission, details=Check access to /business-units
+AUDIT: user=user, client_id=2, action=check_screen_permission, details=Check access to /subcategories
+AUDIT: user=user, client_id=2, action=check_screen_permission, details=Check access to /clients
+AUDIT: user=user, client_id=2, action=check_screen_permission, details=Check access to /users
+AUDIT: user=user, client_id=2, action=check_screen_permission, details=Check access to /unit-of-measure
+AUDIT: user=user, client_id=2, action=check_screen_permission, details=Check access to /currency
+AUDIT: user=user, client_id=2, action=check_screen_permission, details=Check access to /import-errors
+AUDIT: user=user, client_id=2, action=check_screen_permission, details=Check access to /client-settings
+AUDIT: user=user, client_id=2, action=check_screen_permission, details=Check access to /settings
+AUDIT: user=user, client_id=2, action=check_screen_permission, details=Check access to /reporting
+AUDIT: user=user, client_id=2, action=check_screen_permission, details=Check access to /screen-permissions
+AUDIT: user=user, client_id=2, action=check_screen_permission, details=Check access to /dashboard
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /invoices
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /regions
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /business-units
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /dashboard
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /suppliers
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /roles
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /users
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /subcategories
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /unit-of-measure
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /currency
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /clients
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /import-errors
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /reporting
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /client-settings
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /settings
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /screen-permissions
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /dashboard
+AUDIT: user=client_admin, client_id=1, action=get_clients, details=List clients
+AUDIT: user=client_admin, client_id=1, action=get_roles, details=List roles
+AUDIT: user=client_admin, client_id=1, action=get_users, details=List users
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /dashboard
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /invoices
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /suppliers
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /business-units
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /roles
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /regions
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /users
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /clients
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /subcategories
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /currency
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /unit-of-measure
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /import-errors
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /reporting
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /client-settings
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /settings
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /screen-permissions
+AUDIT: user=client_admin, client_id=1, action=check_screen_permission, details=Check access to /dashboard
+AUDIT: user=client_admin, client_id=1, action=get_clients, details=List clients
+AUDIT: user=client_admin, client_id=1, action=get_roles, details=List roles
+AUDIT: user=client_admin, client_id=1, action=get_users, details=List users
+AUDIT: user=client_admin, client_id=1, action=reset_password, details=Reset password for user id: 20
+AUDIT: user=user, client_id=1, action=check_screen_permission, details=Check access to /dashboard
+AUDIT: user=user, client_id=1, action=check_screen_permission, details=Check access to /suppliers
+AUDIT: user=user, client_id=1, action=check_screen_permission, details=Check access to /invoices
+AUDIT: user=user, client_id=1, action=check_screen_permission, details=Check access to /regions
+AUDIT: user=user, client_id=1, action=check_screen_permission, details=Check access to /business-units
+AUDIT: user=user, client_id=1, action=check_screen_permission, details=Check access to /roles
+AUDIT: user=user, client_id=1, action=check_screen_permission, details=Check access to /users
+AUDIT: user=user, client_id=1, action=check_screen_permission, details=Check access to /clients
+AUDIT: user=user, client_id=1, action=check_screen_permission, details=Check access to /unit-of-measure
+AUDIT: user=user, client_id=1, action=check_screen_permission, details=Check access to /subcategories
+AUDIT: user=user, client_id=1, action=check_screen_permission, details=Check access to /currency
+AUDIT: user=user, client_id=1, action=check_screen_permission, details=Check access to /import-errors
+AUDIT: user=user, client_id=1, action=check_screen_permission, details=Check access to /settings
+AUDIT: user=user, client_id=1, action=check_screen_permission, details=Check access to /client-settings
+AUDIT: user=user, client_id=1, action=check_screen_permission, details=Check access to /reporting
+AUDIT: user=user, client_id=1, action=check_screen_permission, details=Check access to /screen-permissions
+AUDIT: user=user, client_id=1, action=check_screen_permission, details=Check access to /dashboard
+AUDIT: user=user, client_id=1, action=get_invoices, details=List invoices
+AUDIT: user=user, client_id=1, action=get_suppliers, details=List suppliers
+AUDIT: user=user, client_id=1, action=get_business_units, details=List business units
+AUDIT: user=user, client_id=1, action=get_regions, details=List regions
+AUDIT: user=superadmin, client_id=0, action=get_invoices, details=List invoices
+AUDIT: user=client_admin, client_id=1, action=get_invoices, details=List invoices
+AUDIT: user=superadmin, client_id=0, action=get_suppliers, details=List suppliers
+AUDIT: user=client_admin, client_id=1, action=get_suppliers, details=List suppliers
+AUDIT: user=superadmin, client_id=0, action=get_business_units, details=List business units
+AUDIT: user=client_admin, client_id=1, action=get_business_units, details=List business units
+AUDIT: user=superadmin, client_id=0, action=get_regions, details=List regions
+AUDIT: user=client_admin, client_id=1, action=get_regions, details=List regions
+AUDIT: user=superadmin, client_id=0, action=get_subcategories, details=List subcategories
+AUDIT: user=client_admin, client_id=1, action=get_subcategories, details=List subcategories
+AUDIT: user=superadmin, client_id=0, action=get_currencies, details=List currencies
+AUDIT: user=client_admin, client_id=1, action=get_currencies, details=List currencies
+AUDIT: user=superadmin, client_id=0, action=get_users, details=List users
+AUDIT: user=client_admin, client_id=1, action=get_users, details=List users
+AUDIT: user=superadmin, client_id=0, action=get_settings, details=Get client settings
+AUDIT: user=client_admin, client_id=1, action=get_settings, details=Get client settings
+AUDIT: user=client_admin, client_id=1, action=get_user, details=Get user 1
+AUDIT: user=client_admin, client_id=1, action=get_invoice, details=Get invoice id: 1
+AUDIT: user=client_admin, client_id=1, action=get_supplier, details=Get supplier id: 1
+AUDIT: user=superadmin, client_id=0, action=get_clients, details=List clients
+AUDIT: user=superadmin, client_id=0, action=get_invoices, details=List invoices
+AUDIT: user=client_admin, client_id=1, action=get_invoices, details=List invoices
+AUDIT: user=superadmin, client_id=0, action=get_suppliers, details=List suppliers
+AUDIT: user=client_admin, client_id=1, action=get_suppliers, details=List suppliers
+AUDIT: user=superadmin, client_id=0, action=get_users, details=List users
+AUDIT: user=client_admin, client_id=1, action=get_users, details=List users
+AUDIT: user=superadmin, client_id=0, action=get_invoices, details=List invoices
+AUDIT: user=superadmin, client_id=0, action=get_suppliers, details=List suppliers
+AUDIT: user=superadmin, client_id=0, action=get_business_units, details=List business units
+AUDIT: user=superadmin, client_id=0, action=get_regions, details=List regions
+AUDIT: user=client_admin, client_id=1, action=get_invoices, details=List invoices
+AUDIT: user=client_admin, client_id=1, action=get_suppliers, details=List suppliers
+AUDIT: user=client_admin, client_id=1, action=get_business_units, details=List business units
+AUDIT: user=client_admin, client_id=1, action=get_regions, details=List regions
+AUDIT: user=client_admin, client_id=2, action=get_invoices, details=List invoices
+AUDIT: user=client_admin, client_id=2, action=get_suppliers, details=List suppliers
+AUDIT: user=client_admin, client_id=2, action=get_business_units, details=List business units
+AUDIT: user=client_admin, client_id=2, action=get_regions, details=List regions
+AUDIT: user=client_admin, client_id=1, action=get_invoice, details=Get invoice id: 5
+AUDIT: user=client_admin, client_id=1, action=get_supplier, details=Get supplier id: 6
+AUDIT: user=client_admin, client_id=1, action=post_suppliers, details=Create supplier: Test Supplier Create
+AUDIT: user=superadmin, client_id=0, action=get_invoices, details=List invoices
+AUDIT: user=client_admin, client_id=1, action=get_invoices, details=List invoices
+AUDIT: user=superadmin, client_id=0, action=get_suppliers, details=List suppliers
+AUDIT: user=client_admin, client_id=1, action=get_suppliers, details=List suppliers
+AUDIT: user=superadmin, client_id=0, action=get_business_units, details=List business units
+AUDIT: user=client_admin, client_id=1, action=get_business_units, details=List business units
+AUDIT: user=superadmin, client_id=0, action=get_regions, details=List regions
+AUDIT: user=client_admin, client_id=1, action=get_regions, details=List regions
+AUDIT: user=superadmin, client_id=0, action=get_subcategories, details=List subcategories
+AUDIT: user=client_admin, client_id=1, action=get_subcategories, details=List subcategories
+AUDIT: user=superadmin, client_id=0, action=get_currencies, details=List currencies
+AUDIT: user=client_admin, client_id=1, action=get_currencies, details=List currencies
+AUDIT: user=superadmin, client_id=0, action=get_users, details=List users
+AUDIT: user=client_admin, client_id=1, action=get_users, details=List users
+AUDIT: user=superadmin, client_id=0, action=get_settings, details=Get client settings
+AUDIT: user=client_admin, client_id=1, action=get_settings, details=Get client settings
+AUDIT: user=client_admin, client_id=1, action=get_user, details=Get user 1
+AUDIT: user=client_admin, client_id=1, action=get_invoice, details=Get invoice id: 1
+AUDIT: user=client_admin, client_id=1, action=get_supplier, details=Get supplier id: 1
+AUDIT: user=superadmin, client_id=0, action=get_clients, details=List clients
+AUDIT: user=client_admin, client_id=1, action=post_suppliers, details=Create supplier: Test Supplier Client Admin
+AUDIT: user=client_admin, client_id=1, action=post_business_units, details=Create business unit: Test BU Client Admin
+AUDIT: user=superadmin, client_id=0, action=get_invoices, details=List invoices
+AUDIT: user=client_admin, client_id=1, action=get_invoices, details=List invoices
+AUDIT: user=superadmin, client_id=0, action=get_suppliers, details=List suppliers
+AUDIT: user=client_admin, client_id=1, action=get_suppliers, details=List suppliers
+AUDIT: user=superadmin, client_id=0, action=get_users, details=List users
+AUDIT: user=client_admin, client_id=1, action=get_users, details=List users
+AUDIT: user=superadmin, client_id=0, action=get_invoices, details=List invoices
+AUDIT: user=client_admin, client_id=1, action=get_invoices, details=List invoices
+AUDIT: user=superadmin, client_id=0, action=get_suppliers, details=List suppliers
+AUDIT: user=client_admin, client_id=1, action=get_suppliers, details=List suppliers
+AUDIT: user=superadmin, client_id=0, action=get_business_units, details=List business units
+AUDIT: user=client_admin, client_id=1, action=get_business_units, details=List business units
+AUDIT: user=superadmin, client_id=0, action=get_regions, details=List regions
+AUDIT: user=client_admin, client_id=1, action=get_regions, details=List regions
+AUDIT: user=superadmin, client_id=0, action=get_subcategories, details=List subcategories
+AUDIT: user=client_admin, client_id=1, action=get_subcategories, details=List subcategories
+AUDIT: user=superadmin, client_id=0, action=get_currencies, details=List currencies
+AUDIT: user=client_admin, client_id=1, action=get_currencies, details=List currencies
+AUDIT: user=superadmin, client_id=0, action=get_users, details=List users
+AUDIT: user=client_admin, client_id=1, action=get_users, details=List users
+AUDIT: user=superadmin, client_id=0, action=get_settings, details=Get client settings
+AUDIT: user=client_admin, client_id=1, action=get_settings, details=Get client settings
+AUDIT: user=client_admin, client_id=1, action=get_user, details=Get user 1
+AUDIT: user=client_admin, client_id=1, action=get_invoice, details=Get invoice id: 7
+AUDIT: user=client_admin, client_id=1, action=get_supplier, details=Get supplier id: 7
+AUDIT: user=superadmin, client_id=0, action=get_clients, details=List clients
+AUDIT: user=client_admin, client_id=1, action=post_suppliers, details=Create supplier: Test Supplier Client Admin
+AUDIT: user=client_admin, client_id=1, action=post_business_units, details=Create business unit: Test BU Client Admin
+AUDIT: user=superadmin, client_id=0, action=get_invoices, details=List invoices
+AUDIT: user=client_admin, client_id=1, action=get_invoices, details=List invoices
+AUDIT: user=superadmin, client_id=0, action=get_suppliers, details=List suppliers
+AUDIT: user=client_admin, client_id=1, action=get_suppliers, details=List suppliers
+AUDIT: user=superadmin, client_id=0, action=get_users, details=List users
+AUDIT: user=client_admin, client_id=1, action=get_users, details=List users
+AUDIT: user=superadmin, client_id=0, action=get_invoices, details=List invoices
+AUDIT: user=client_admin, client_id=1, action=get_invoices, details=List invoices
+AUDIT: user=superadmin, client_id=0, action=get_suppliers, details=List suppliers
+AUDIT: user=client_admin, client_id=1, action=get_suppliers, details=List suppliers
+AUDIT: user=superadmin, client_id=0, action=get_business_units, details=List business units
+AUDIT: user=client_admin, client_id=1, action=get_business_units, details=List business units
+AUDIT: user=superadmin, client_id=0, action=get_regions, details=List regions
+AUDIT: user=client_admin, client_id=1, action=get_regions, details=List regions
+AUDIT: user=superadmin, client_id=0, action=get_subcategories, details=List subcategories
+AUDIT: user=client_admin, client_id=1, action=get_subcategories, details=List subcategories
+AUDIT: user=superadmin, client_id=0, action=get_currencies, details=List currencies
+AUDIT: user=client_admin, client_id=1, action=get_currencies, details=List currencies
+AUDIT: user=superadmin, client_id=0, action=get_users, details=List users
+AUDIT: user=client_admin, client_id=1, action=get_users, details=List users
+AUDIT: user=superadmin, client_id=0, action=get_settings, details=Get client settings
+AUDIT: user=client_admin, client_id=1, action=get_settings, details=Get client settings
+AUDIT: user=client_admin, client_id=1, action=get_user, details=Get user 1
+AUDIT: user=client_admin, client_id=1, action=get_invoice, details=Get invoice id: 7
+AUDIT: user=client_admin, client_id=1, action=get_supplier, details=Get supplier id: 7
+AUDIT: user=superadmin, client_id=0, action=get_clients, details=List clients
+AUDIT: user=superadmin, client_id=0, action=get_invoices, details=List invoices
+AUDIT: user=client_admin, client_id=1, action=get_invoices, details=List invoices
+AUDIT: user=superadmin, client_id=0, action=get_suppliers, details=List suppliers
+AUDIT: user=client_admin, client_id=1, action=get_suppliers, details=List suppliers
+AUDIT: user=superadmin, client_id=0, action=get_business_units, details=List business units
+AUDIT: user=client_admin, client_id=1, action=get_business_units, details=List business units
+AUDIT: user=superadmin, client_id=0, action=get_regions, details=List regions
+AUDIT: user=client_admin, client_id=1, action=get_regions, details=List regions
+AUDIT: user=superadmin, client_id=0, action=get_users, details=List users
+AUDIT: user=client_admin, client_id=1, action=get_users, details=List users
+AUDIT: user=superadmin, client_id=0, action=get_invoice, details=Get invoice id: 1
+AUDIT: user=superadmin, client_id=0, action=get_invoice, details=Get invoice id: 7
+AUDIT: user=superadmin, client_id=0, action=get_supplier, details=Get supplier id: 1
+AUDIT: user=superadmin, client_id=0, action=get_supplier, details=Get supplier id: 7
+AUDIT: user=superadmin, client_id=0, action=get_user, details=Get user 2
+AUDIT: user=superadmin, client_id=0, action=get_user, details=Get user 21
+AUDIT: user=superadmin, client_id=0, action=post_suppliers, details=Create supplier: Superadmin Test Supplier Client1
+AUDIT: user=superadmin, client_id=0, action=post_suppliers, details=Create supplier: Superadmin Test Supplier Client2
+AUDIT: user=superadmin, client_id=0, action=get_invoices, details=List invoices
+AUDIT: user=superadmin, client_id=0, action=get_suppliers, details=List suppliers
+AUDIT: user=superadmin, client_id=0, action=get_business_units, details=List business units
+AUDIT: user=superadmin, client_id=0, action=get_users, details=List users
+AUDIT: user=client_admin, client_id=1, action=post_suppliers, details=Create supplier: Test Supplier Client Admin
+AUDIT: user=client_admin, client_id=1, action=post_business_units, details=Create business unit: Test BU Client Admin
+AUDIT: user=superadmin, client_id=0, action=get_invoices, details=List invoices
+AUDIT: user=client_admin, client_id=1, action=get_invoices, details=List invoices
+AUDIT: user=superadmin, client_id=0, action=get_suppliers, details=List suppliers
+AUDIT: user=client_admin, client_id=1, action=get_suppliers, details=List suppliers
+AUDIT: user=superadmin, client_id=0, action=get_users, details=List users
+AUDIT: user=client_admin, client_id=1, action=get_users, details=List users
+AUDIT: user=superadmin, client_id=0, action=get_invoices, details=List invoices
+AUDIT: user=client_admin, client_id=1, action=get_invoices, details=List invoices
+AUDIT: user=superadmin, client_id=0, action=get_suppliers, details=List suppliers
+AUDIT: user=client_admin, client_id=1, action=get_suppliers, details=List suppliers
+AUDIT: user=superadmin, client_id=0, action=get_business_units, details=List business units
+AUDIT: user=client_admin, client_id=1, action=get_business_units, details=List business units
+AUDIT: user=superadmin, client_id=0, action=get_regions, details=List regions
+AUDIT: user=client_admin, client_id=1, action=get_regions, details=List regions
+AUDIT: user=superadmin, client_id=0, action=get_subcategories, details=List subcategories
+AUDIT: user=client_admin, client_id=1, action=get_subcategories, details=List subcategories
+AUDIT: user=superadmin, client_id=0, action=get_currencies, details=List currencies
+AUDIT: user=client_admin, client_id=1, action=get_currencies, details=List currencies
+AUDIT: user=superadmin, client_id=0, action=get_users, details=List users
+AUDIT: user=client_admin, client_id=1, action=get_users, details=List users
+AUDIT: user=superadmin, client_id=0, action=get_settings, details=Get client settings
+AUDIT: user=client_admin, client_id=1, action=get_settings, details=Get client settings
+AUDIT: user=client_admin, client_id=1, action=get_user, details=Get user 1
+AUDIT: user=client_admin, client_id=1, action=get_invoice, details=Get invoice id: 7
+AUDIT: user=client_admin, client_id=1, action=get_supplier, details=Get supplier id: 7
+AUDIT: user=superadmin, client_id=0, action=get_clients, details=List clients
+AUDIT: user=superadmin, client_id=0, action=get_invoices, details=List invoices
+AUDIT: user=client_admin, client_id=1, action=get_invoices, details=List invoices
+AUDIT: user=superadmin, client_id=0, action=get_suppliers, details=List suppliers
+AUDIT: user=client_admin, client_id=1, action=get_suppliers, details=List suppliers
+AUDIT: user=superadmin, client_id=0, action=get_business_units, details=List business units
+AUDIT: user=client_admin, client_id=1, action=get_business_units, details=List business units
+AUDIT: user=superadmin, client_id=0, action=get_regions, details=List regions
+AUDIT: user=client_admin, client_id=1, action=get_regions, details=List regions
+AUDIT: user=superadmin, client_id=0, action=get_users, details=List users
+AUDIT: user=client_admin, client_id=1, action=get_users, details=List users
+AUDIT: user=superadmin, client_id=0, action=get_invoice, details=Get invoice id: 1
+AUDIT: user=superadmin, client_id=0, action=get_invoice, details=Get invoice id: 7
+AUDIT: user=superadmin, client_id=0, action=get_supplier, details=Get supplier id: 1
+AUDIT: user=superadmin, client_id=0, action=get_supplier, details=Get supplier id: 7
+AUDIT: user=superadmin, client_id=0, action=get_user, details=Get user 2
+AUDIT: user=superadmin, client_id=0, action=get_user, details=Get user 21
+AUDIT: user=superadmin, client_id=0, action=post_suppliers, details=Create supplier: Superadmin Test Supplier Client1
+AUDIT: user=superadmin, client_id=0, action=post_suppliers, details=Create supplier: Superadmin Test Supplier Client2
+AUDIT: user=superadmin, client_id=0, action=get_invoices, details=List invoices
+AUDIT: user=superadmin, client_id=0, action=get_suppliers, details=List suppliers
+AUDIT: user=superadmin, client_id=0, action=get_business_units, details=List business units
+AUDIT: user=superadmin, client_id=0, action=get_users, details=List users
+AUDIT: user=client_admin, client_id=1, action=post_suppliers, details=Create supplier: Test Supplier Client Admin
+AUDIT: user=client_admin, client_id=1, action=post_business_units, details=Create business unit: Test BU Client Admin
+AUDIT: user=superadmin, client_id=0, action=get_invoices, details=List invoices
+AUDIT: user=client_admin, client_id=1, action=get_invoices, details=List invoices
+AUDIT: user=superadmin, client_id=0, action=get_suppliers, details=List suppliers
+AUDIT: user=client_admin, client_id=1, action=get_suppliers, details=List suppliers
+AUDIT: user=superadmin, client_id=0, action=get_users, details=List users
+AUDIT: user=client_admin, client_id=1, action=get_users, details=List users

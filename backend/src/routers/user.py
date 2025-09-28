@@ -251,6 +251,12 @@ def reset_user_password(id: int, password_data: PasswordReset, role: str = Depen
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
     
+    # Additional security check: client_admin cannot reset superadmin password
+    if role == "client_admin":
+        target_user_roles = [r.name for r in db_user.roles] if hasattr(db_user, 'roles') and db_user.roles else []
+        if "superadmin" in target_user_roles:
+            raise HTTPException(status_code=403, detail="Cannot reset superadmin password")
+    
     # Update password
     db_user.set_password(new_password)
     db.commit()

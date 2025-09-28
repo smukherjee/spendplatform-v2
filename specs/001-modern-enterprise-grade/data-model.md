@@ -65,7 +65,7 @@ All entities include a `client_id` field for multi-tenancy. PK/FK constraints ar
 - roles (many-to-many with Role)
 - client_id (FK to Client)
 - personalisation (JSON: theme, i18n, etc.)
-- screen_permissions (relationship to UserScreenPermission)
+
 
 **Note**: User model currently does NOT inherit from AuditMixin (missing audit fields: created_at, updated_at, created_by, updated_by, is_deleted). This should be added for compliance.
 
@@ -206,18 +206,14 @@ All entities include a `client_id` field for multi-tenancy. PK/FK constraints ar
 - category (e.g., "Financial", "Admin", "Reporting")
 - is_active (boolean, default True)
 - role_permissions (relationship to RoleScreenPermission)
-- user_permissions (relationship to UserScreenPermission)
+
 - created_at (AuditMixin)
 - updated_at (AuditMixin)
 - created_by (FK to User, AuditMixin)
 - updated_by (FK to User, AuditMixin)
 - is_deleted (soft deletion flag, AuditMixin)
 
-### 13. UserScreenPermission
 
-- id (PK)
-- user_id (FK to User)
-- screen_id (FK to Screen)
 - allow_access (boolean, default False)
 - created_at (AuditMixin)
 - updated_at (AuditMixin)

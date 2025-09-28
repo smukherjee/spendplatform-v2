@@ -49,6 +49,7 @@ def seed_database():
         
         # 1. Create Clients (Multi-tenancy)
         clients = [
+            Client(id=0, name="SuperAdmin Global Access", created_by=1, updated_by=1),
             Client(id=1, name="ACME Corporation", created_by=1, updated_by=1),
             Client(id=2, name="Global Enterprises", created_by=1, updated_by=1),
             Client(id=3, name="Tech Solutions Inc", created_by=1, updated_by=1)
@@ -90,8 +91,8 @@ def seed_database():
         
         # 3. Create Users with proper password hashing
         users = [
-            # Superadmin (cross-tenant)
-            User(id=1, username="superadmin", email="admin@spendplatform.com", client_id=1),
+            # Superadmin (global access with dedicated client)
+            User(id=1, username="superadmin", email="admin@spendplatform.com", client_id=0),
             
             # ACME Corporation users
             User(id=2, username="acme_admin", email="admin@acme.com", client_id=1),

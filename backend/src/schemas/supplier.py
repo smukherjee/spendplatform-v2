@@ -7,8 +7,11 @@ class SupplierBase(BaseModel):
     region_id: int
     client_id: int
 
-class SupplierCreate(SupplierBase):
-    pass
+class SupplierCreate(BaseModel):
+    name: str
+    contact_info: Optional[str] = None
+    region_id: int
+    client_id: Optional[int] = None  # Auto-assigned by backend
 
 class SupplierRead(SupplierBase):
     id: int

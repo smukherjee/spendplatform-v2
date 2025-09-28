@@ -52,6 +52,12 @@ def insert_test_data(engine):
     session = Session()
     
     try:
+        # Create superadmin client with ID=0
+        superadmin_client = Client(id=0, name="SuperAdmin Global Access")
+        session.add(superadmin_client)
+        session.flush()
+        print(f"✅ Created superadmin client: {superadmin_client.name} (ID: {superadmin_client.id})")
+        
         # Create test client
         client = Client(name="Test Company")
         session.add(client)
@@ -81,10 +87,13 @@ def insert_test_data(engine):
         ]
         
         for user_data in users_data:
+            # Assign superadmin to client_id=0, others to regular client
+            target_client_id = 0 if user_data["role"] == "superadmin" else client.id
+            
             user = User(
                 username=user_data["username"],
                 email=user_data["email"],
-                client_id=client.id
+                client_id=target_client_id
             )
             user.set_password(user_data["password"])
             session.add(user)

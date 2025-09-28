@@ -55,6 +55,7 @@ def post_invoices(invoice: InvoiceCreate, role: str = Depends(get_current_role),
 @router.get("/{id}", response_model=InvoiceRead, summary="Get an invoice by ID")
 def get_invoice(id: int, role: str = Depends(get_current_role), client_id: int = Depends(get_client_id), db: Session = Depends(get_db)):
     """Returns an invoice by ID, filtered by client if not superadmin."""
+    enforce_role(role, ["client_admin", "user", "superadmin"])
     log_audit(action="get_invoice", user=role, client_id=client_id, details=f"Get invoice id: {id}")
     
     # Query invoice based on role

@@ -15,6 +15,8 @@ from models.client import Client
 from routers.client import router as client_router
 from routers.user import router as user_router
 from routers.role import router as role_router
+from routers.auth import router as auth_router
+from routers.user_management import router as user_management_router
 from routers.business_unit import router as business_unit_router
 from routers.region import router as region_router
 from routers.supplier import router as supplier_router
@@ -26,6 +28,7 @@ from routers.currency import router as currency_router
 from routers.client_settings import router as client_settings_router
 from routers.reporting import router as reporting_router
 from routers.audit import router as audit_router
+from routers.audit_logs import router as audit_logs_router
 from routers.import_errors import router as import_errors_router
 from routers.screen_permissions import router as screen_permissions_router
 
@@ -47,6 +50,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth_router)
+app.include_router(user_management_router)
 app.include_router(client_router)
 app.include_router(user_router)
 app.include_router(role_router)
@@ -61,6 +66,7 @@ app.include_router(currency_router)
 app.include_router(client_settings_router)
 app.include_router(reporting_router)
 app.include_router(audit_router)
+app.include_router(audit_logs_router)
 app.include_router(import_errors_router)
 app.include_router(screen_permissions_router)
 
