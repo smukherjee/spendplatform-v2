@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback, useMemo, memo } from 'react';
+import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { DataTable, DataTableFilterMeta } from 'primereact/datatable';
 import { Column, ColumnEditorOptions } from 'primereact/column';
 import { Button } from 'primereact/button';
@@ -15,11 +15,7 @@ import { fetchUsers, createUser, updateUser, deleteUser, fetchClients, fetchRole
 import { useMobileDetection } from '../hooks/useMobileDetection';
 import { UserTableErrorBoundary } from '../components/UserTableErrorBoundary';
 import { 
-  createSearchFunction, 
   createDebouncer, 
-  batchOperation, 
-  validateUser,
-  createPerformanceTracker,
   getMemoryUsage 
 } from '../utils/userTableUtils';
 import 'primereact/resources/themes/lara-light-cyan/theme.css';
@@ -48,7 +44,6 @@ export default function Users() {
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
   const [submitted, setSubmitted] = useState(false);
   const [globalFilter, setGlobalFilter] = useState('');
-  const [debouncedGlobalFilter, setDebouncedGlobalFilter] = useState('');
   const [filters, setFilters] = useState<DataTableFilterMeta>({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
     name: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
@@ -56,7 +51,6 @@ export default function Users() {
     client_name: { value: null, matchMode: FilterMatchMode.CONTAINS },
     roles: { value: null, matchMode: FilterMatchMode.CONTAINS }
   });
-  const [optimisticUpdates, setOptimisticUpdates] = useState<Map<string | number, User>>(new Map());
   const [lastFetchTime, setLastFetchTime] = useState<number>(0);
   const [clients, setClients] = useState<Client[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
@@ -68,10 +62,8 @@ export default function Users() {
   const [selectedUserForReset, setSelectedUserForReset] = useState<User>({} as User);
   
   // Performance utilities
-  const searchFunction = useMemo(() => createSearchFunction(), []);
-  const performanceTracker = useMemo(() => createPerformanceTracker(), []);
   const debouncedSearch = useMemo(() => createDebouncer((term: string) => {
-    setDebouncedGlobalFilter(term);
+    // Debounced search implementation can be added here if needed
   }, 300), []);
   const [editingRows, setEditingRows] = useState({});
   const [totalRecords, setTotalRecords] = useState(0);
@@ -84,7 +76,6 @@ export default function Users() {
     filters: {}
   });
   const [isAddingNew, setIsAddingNew] = useState(false);
-  const [newRowData, setNewRowData] = useState<User>({} as User);
   const toast = useRef<Toast>(null);
   const dt = useRef<DataTable<User[]>>(null);
   
@@ -140,7 +131,7 @@ export default function Users() {
   // Debounced search for performance
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
-      setDebouncedGlobalFilter(globalFilter);
+      // Global filter is already handled by the input onChange
     }, 300); // 300ms debounce
 
     return () => clearTimeout(debounceTimer);
@@ -278,7 +269,7 @@ export default function Users() {
       console.log('✅ Setting loading to false');
       setLoading(false);
     }
-  }, [users.length, lastFetchTime, clients]);
+  }, [users.length, lastFetchTime, clients, loading]);
 
   // Initial load effect - runs only once
   useEffect(() => {
@@ -362,7 +353,6 @@ export default function Users() {
 
   const startAddingNew = () => {
     setIsAddingNew(true);
-    setNewRowData({ id: 'new', name: '', username: '', email: '', password: '', client_id: clients.length > 0 ? clients[0].id : 1, roles: [] } as User);
     
     // Add temporary new row at the top
     const tempUser = { 
@@ -390,7 +380,6 @@ export default function Users() {
 
   const cancelAddingNew = () => {
     setIsAddingNew(false);
-    setNewRowData({} as User);
     
     // Remove temporary row
     setUsers(users.filter(u => u.id !== 'temp-new'));
@@ -467,7 +456,6 @@ export default function Users() {
       });
       
       // Create user via API - map frontend fields to backend schema
-      const { id, name, client_name, ...userData } = rowData;
       const userCreateData = {
         username: username.trim(),
         email: rowData.email.trim(),
@@ -495,7 +483,6 @@ export default function Users() {
       
       // Reset states
       setIsAddingNew(false);
-      setNewRowData({} as User);
       setEditingRows({});
       
       toast.current?.show({ 
@@ -652,22 +639,6 @@ export default function Users() {
     }
   };
 
-  const editUser = (user: User) => {
-    setUser({ ...user });
-    setUserDialog(true);
-  };
-
-
-
-  const confirmDeleteUser = (user: User) => {
-    confirmDialog({
-      message: 'Are you sure you want to delete this user?',
-      header: 'Confirm',
-      icon: 'pi pi-exclamation-triangle',
-      accept: () => deleteUserConfirmed(user)
-    });
-  };
-
   const deleteUserConfirmed = useCallback(async (user: User) => {
     const originalUsers = [...users];
     try {
@@ -702,14 +673,14 @@ export default function Users() {
     }
   }, [users]);
 
-  const confirmDeleteSelected = useCallback(() => {
+  const confirmDeleteUser = useCallback((user: User) => {
     confirmDialog({
-      message: `Are you sure you want to delete ${selectedUsers.length} selected user(s)?`,
-      header: 'Confirm Bulk Delete',
+      message: 'Are you sure you want to delete this user?',
+      header: 'Confirm',
       icon: 'pi pi-exclamation-triangle',
-      accept: () => deleteSelectedUsers()
+      accept: () => deleteUserConfirmed(user)
     });
-  }, [selectedUsers]);
+  }, [deleteUserConfirmed]);
 
   const deleteSelectedUsers = useCallback(async () => {
     if (selectedUsers.length === 0) return;
@@ -756,6 +727,15 @@ export default function Users() {
       });
     }
   }, [selectedUsers, users]);
+
+  const confirmDeleteSelected = useCallback(() => {
+    confirmDialog({
+      message: `Are you sure you want to delete ${selectedUsers.length} selected user(s)?`,
+      header: 'Confirm Bulk Delete',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => deleteSelectedUsers()
+    });
+  }, [selectedUsers, deleteSelectedUsers]);
 
   const onInputChange = (e: React.ChangeEvent<HTMLInputElement>, name: string) => {
     const val = (e.target && e.target.value) || '';
@@ -881,8 +861,20 @@ export default function Users() {
         }
       }
       
+      // Filter data to match backend UserUpdate schema (for PUT requests)
+      // Omit password field entirely for inline edits
+      const updateData = {
+        username: newData.username || newData.name,
+        email: newData.email,
+        client_id: newData.client_id,
+        personalisation: newData.personalisation || null
+      };
+      
+      console.log('🔍 INLINE EDIT - Original data:', newData);
+      console.log('📤 INLINE EDIT - Filtered data being sent:', updateData);
+      
       // Update user via API
-      const updatedUser = await updateUser(newData.id, newData);
+      const updatedUser = await updateUser(newData.id, updateData);
       
       // Update local state
       let _users = [...users];
@@ -910,30 +902,6 @@ export default function Users() {
     } finally {
       setLazyLoading(false);
     }
-  };
-
-  const onRowEditCancel = (e: any) => {
-    // Handle canceling new user creation
-    if (e.data.id === 'temp-new') {
-      cancelAddingNew();
-      return;
-    }
-
-    toast.current?.show({ 
-      severity: 'info', 
-      summary: 'Cancelled', 
-      detail: 'Edit cancelled', 
-      life: 2000 
-    });
-  };
-
-  const onRowEditInit = (e: any) => {
-    toast.current?.show({ 
-      severity: 'info', 
-      summary: 'Edit Mode', 
-      detail: 'Editing user - click save or cancel when done', 
-      life: 3000 
-    });
   };
 
   // Enhanced cell editor components
@@ -1003,7 +971,6 @@ export default function Users() {
         optionValue="id"
         onChange={(e) => {
           // Update both client_id and client_name
-          const selectedClient = clients.find(c => c.id === e.value);
           options.editorCallback!(e.value);
           // Note: For inline editing, we'd need to update the client_name too
           // This is handled in the onRowEditComplete function
@@ -1058,7 +1025,6 @@ export default function Users() {
   const initFilters = useCallback(() => {
     setFilters(defaultFilters);
     setGlobalFilter('');
-    setDebouncedGlobalFilter('');
   }, [defaultFilters]);
 
   const clearFilter = useCallback(() => {
@@ -1124,7 +1090,7 @@ export default function Users() {
         />
       </div>
     );
-  }, [screenSize, isAddingNew, selectedUsers.length, openNew, cancelAddingNew, confirmDeleteSelected]);
+  }, [screenSize, isAddingNew, selectedUsers.length, selectedUsers, openNew, cancelAddingNew, confirmDeleteSelected]);
 
   const rightToolbarTemplate = () => {
     return (

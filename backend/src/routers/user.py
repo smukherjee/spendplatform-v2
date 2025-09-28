@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List
 from sqlalchemy.orm import Session
-from schemas.user import UserCreate, UserRead, PasswordReset
+from schemas.user import UserCreate, UserUpdate, UserRead, PasswordReset
 from models.user import User
 from database import get_db
 from utils import get_current_role, enforce_role, get_client_id
@@ -137,7 +137,7 @@ def get_user(id: int, role: str = Depends(get_current_role), client_id: int = De
     }
 
 @router.put("/{id}", response_model=UserRead, summary="Update a user")
-def put_user(id: int, user: UserCreate, role: str = Depends(get_current_role), client_id: int = Depends(get_client_id), db: Session = Depends(get_db)):
+def put_user(id: int, user: UserUpdate, role: str = Depends(get_current_role), client_id: int = Depends(get_client_id), db: Session = Depends(get_db)):
     """Updates a user by ID."""
     enforce_role(role, ["client_admin", "superadmin"])
     log_audit(action="put_user", user=role, client_id=client_id, details=f"Update user id: {id}")
@@ -154,14 +154,14 @@ def put_user(id: int, user: UserCreate, role: str = Depends(get_current_role), c
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
     
-    # Update fields
-    for field, value in user.dict().items():
+    # Update fields (only update fields that are provided and not None)
+    for field, value in user.dict(exclude_unset=True).items():
         if field == "password":
-            if value:  # Only update password if provided
+            if value:  # Only update password if provided and not empty
                 db_user.set_password(value)
         elif field == "client_id" and role != "superadmin":
             continue  # Don't allow client_id updates for non-superadmin
-        else:
+        elif value is not None:  # Only update if value is provided
             setattr(db_user, field, value)
     
     db.commit()
