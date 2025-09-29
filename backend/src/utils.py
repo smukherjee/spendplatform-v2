@@ -1,6 +1,6 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from typing import Literal, Optional
+from typing import Dict, Iterable, List, Optional
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,6 +9,7 @@ import os
 
 from database_async import get_async_db
 from models.user import User
+from models.role import ROLE_PRIORITY_ORDER
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -40,23 +41,69 @@ def decode_access_token(token: str) -> dict:
     except JWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials")
 
-def get_current_role(token: str = Depends(oauth2_scheme)) -> Literal["superadmin", "client_admin", "user"]:
+def role_priority(role_name: str) -> int:
+    if not isinstance(role_name, str):
+        return len(ROLE_PRIORITY_ORDER)
+
+    normalized = role_name.strip().lower()
+    try:
+        return ROLE_PRIORITY_ORDER.index(normalized)
+    except ValueError:
+        return len(ROLE_PRIORITY_ORDER)
+
+
+def normalize_role_names(role_names: Iterable[str]) -> List[str]:
+    seen = set()
+    cleaned: List[str] = []
+
+    for name in role_names or []:
+        if not isinstance(name, str):
+            continue
+        trimmed = name.strip()
+        if not trimmed:
+            continue
+        lowered = trimmed.lower()
+        if lowered in seen:
+            continue
+        seen.add(lowered)
+        cleaned.append(lowered)
+
+    cleaned.sort(key=role_priority)
+    return cleaned
+
+
+def _resolve_highest_role(roles: list[str], role_levels: Optional[Dict[str, int]] = None) -> Optional[str]:
+    normalized_roles = normalize_role_names(roles)
+
+    if role_levels:
+        normalized_levels = {
+            (name or "").strip().lower(): level
+            for name, level in role_levels.items()
+            if isinstance(name, str) and isinstance(level, int)
+        }
+        if normalized_levels:
+            best_role = min(normalized_levels.items(), key=lambda item: item[1])[0]
+            if not normalized_roles or best_role in normalized_roles:
+                return best_role
+
+    if not normalized_roles:
+        return None
+
+    return min(normalized_roles, key=role_priority)
+
+
+def get_current_role(token: str = Depends(oauth2_scheme)) -> str:
     payload = decode_access_token(token)
     roles = payload.get("roles", [])
-    
-    # Return the highest priority role
-    if "superadmin" in roles:
-        return "superadmin"
-    elif "client_admin" in roles:
-        return "client_admin"
-    elif "user" in roles:
-        return "user"
-    
-    # Fallback to single role field for backward compatibility
+
+    resolved_role = _resolve_highest_role(roles, payload.get("role_levels"))
+    if resolved_role:
+        return resolved_role
+
     single_role = payload.get("role")
-    if single_role and single_role in ["superadmin", "client_admin", "user"]:
+    if single_role:
         return single_role
-        
+
     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid role")
 
 async def get_current_user_async(
@@ -112,5 +159,11 @@ def get_current_user_id(token: str = Depends(oauth2_scheme)) -> int:
     return user_id
 
 def enforce_role(role: str, allowed: list):
-    if role not in allowed:
+    if not allowed:
+        return
+
+    role_priority_value = role_priority(role)
+    allowed_priorities = [role_priority(allowed_role) for allowed_role in allowed]
+
+    if role_priority_value > min(allowed_priorities):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")

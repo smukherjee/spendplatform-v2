@@ -238,10 +238,22 @@ export interface Role {
   id: number;
   name: string;
   permissions?: any;
+  hierarchy_level?: number;
+  parent_role_id?: number | null;
+  client_id?: number | null;
 }
 
-export const fetchRoles = async (): Promise<Role[]> => {
-  const response = await api.get('/roles');
+export const fetchRoles = async (clientId?: number | null): Promise<Role[]> => {
+  const config =
+    clientId !== undefined
+      ? {
+          params: {
+            ...(clientId !== null ? { client_id: clientId } : {}),
+          },
+        }
+      : undefined;
+
+  const response = await api.get('/roles', config);
   return response.data;
 };
 

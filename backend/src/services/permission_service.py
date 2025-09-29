@@ -89,8 +89,15 @@ class PermissionService:
                 await self._cache_result(cache_key, result)
                 return result
             
-            # Use user's client_id if not provided
-            effective_client_id = client_id or user.client_id
+            # Use user's client_id if not provided, ensuring primitive values
+            user_client_id = getattr(user, "client_id", None)
+            if user_client_id is not None:
+                try:
+                    user_client_id = int(user_client_id)
+                except (TypeError, ValueError):
+                    user_client_id = None
+
+            effective_client_id: Optional[int] = client_id if client_id is not None else user_client_id
             
             # Check if screen requires superadmin
             if getattr(screen, 'requires_super_admin', False):
@@ -110,9 +117,32 @@ class PermissionService:
                 return result
             
             # 2. Check role-based permissions
+            role_ids: List[int] = []
+            for role in getattr(user, "roles", []) or []:
+                role_identifier = getattr(role, "id", None)
+                if role_identifier is None:
+                    continue
+                try:
+                    role_ids.append(int(role_identifier))
+                except (TypeError, ValueError):
+                    continue
+
+            screen_id_value = getattr(screen, "id", None)
+            if screen_id_value is None:
+                result = PermissionResult(False, "Screen identifier missing", "error")
+                await self._cache_result(cache_key, result)
+                return result
+
+            try:
+                screen_id_int = int(screen_id_value)
+            except (TypeError, ValueError):
+                result = PermissionResult(False, "Invalid screen identifier", "error")
+                await self._cache_result(cache_key, result)
+                return result
+
             role_permissions = await self._get_role_screen_permissions(
-                [role.id for role in user.roles], 
-                screen.id, 
+                role_ids,
+                screen_id_int,
                 effective_client_id
             )
             
@@ -187,8 +217,23 @@ class PermissionService:
             
             # Check each screen
             for screen in screens:
+                screen_id_value = getattr(screen, "id", None)
+                screen_route_value = getattr(screen, "route", None)
+                if screen_id_value is None or screen_route_value is None:
+                    continue
+
+                try:
+                    screen_id_value = int(screen_id_value)
+                except (TypeError, ValueError):
+                    continue
+
+                screen_route_str = str(screen_route_value)
+
                 permission_result = await self.check_screen_permission(
-                    user_id, screen.route, PermissionAction.VIEW, user.client_id
+                    user_id,
+                    screen_route_str,
+                    PermissionAction.VIEW,
+                    getattr(user, "client_id", None)
                 )
                 
                 if permission_result.has_permission:
@@ -196,18 +241,21 @@ class PermissionService:
                     permissions = {}
                     for action in PermissionAction:
                         perm_result = await self.check_screen_permission(
-                            user_id, screen.route, action, user.client_id
+                            user_id,
+                            screen_route_str,
+                            action,
+                            getattr(user, "client_id", None)
                         )
                         permissions[f"can_{action.value}"] = perm_result.has_permission
                     
                     accessible_screens.append({
-                        "id": screen.id,
-                        "name": screen.name,
-                        "route": screen.route,
-                        "category": screen.category,
-                        "icon": screen.icon,
-                        "description": screen.description,
-                        "order_priority": screen.order_priority,
+                        "id": screen_id_value,
+                        "name": getattr(screen, "name", None),
+                        "route": screen_route_str,
+                        "category": getattr(screen, "category", None),
+                        "icon": getattr(screen, "icon", None),
+                        "description": getattr(screen, "description", None),
+                        "order_priority": getattr(screen, "order_priority", None),
                         "permissions": permissions
                     })
             
@@ -253,28 +301,32 @@ class PermissionService:
             }
             
             for screen in screens:
+                role_id_value = getattr(role, "id", None)
+                screen_id_value = getattr(screen, "id", None)
+                if role_id_value is None or screen_id_value is None:
+                    continue
+
+                try:
+                    role_id_int = int(role_id_value)
+                    screen_id_int = int(screen_id_value)
+                except (TypeError, ValueError):
+                    continue
+
                 # Get permission for this role and screen
-                permission_query = (
-                    select(RoleScreenPermission)
-                    .where(and_(
-                        RoleScreenPermission.role_id == role.id,
-                        RoleScreenPermission.screen_id == screen.id,
-                        or_(
-                            RoleScreenPermission.client_id == client_id,
-                            RoleScreenPermission.client_id.is_(None)
-                        )
-                    ))
+                permission_candidates = await self._get_role_screen_permissions(
+                    [role_id_int],
+                    screen_id_int,
+                    client_id
                 )
-                perm_result = await self.session.execute(permission_query)
-                permission = perm_result.scalar_one_or_none()
+                permission = permission_candidates[0] if permission_candidates else None
                 
                 screen_permissions = {
-                    "screen_id": screen.id,
-                    "screen_name": screen.name,
-                    "screen_route": screen.route,
-                    "category": screen.category,
-                    "screen_description": screen.description,
-                    "is_active": screen.is_active,
+                    "screen_id": screen_id_int,
+                    "screen_name": getattr(screen, "name", None),
+                    "screen_route": getattr(screen, "route", None),
+                    "category": getattr(screen, "category", None),
+                    "screen_description": getattr(screen, "description", None),
+                    "is_active": getattr(screen, "is_active", None),
                     "can_view": permission.can_view if permission else False,
                     "can_create": permission.can_create if permission else False,
                     "can_edit": permission.can_edit if permission else False,
@@ -401,26 +453,74 @@ class PermissionService:
     # Private helper methods
     async def _is_superadmin(self, user: User) -> bool:
         """Check if user has superadmin role"""
-        return any(role.name.lower() in ['superadmin', 'super_admin', 'super admin'] for role in user.roles)
+        for role in getattr(user, "roles", []) or []:
+            if getattr(role, "hierarchy_level", None) == 0:
+                return True
+            name = getattr(role, "name", "").lower()
+            if name in ['superadmin', 'super_admin', 'super admin']:
+                return True
+        return False
     
 
     
-    async def _get_role_screen_permissions(self, role_ids: List[int], screen_id: int, client_id: int) -> List[RoleScreenPermission]:
-        """Get role-based screen permissions"""
-        query = (
-            select(RoleScreenPermission)
-            .options(joinedload(RoleScreenPermission.role))
-            .where(and_(
-                RoleScreenPermission.role_id.in_(role_ids),
-                RoleScreenPermission.screen_id == screen_id,
+    async def _get_role_screen_permissions(
+        self,
+        role_ids: List[int],
+        screen_id: int,
+        client_id: Optional[int]
+    ) -> List[RoleScreenPermission]:
+        """Get role-based screen permissions, preferring client-specific rows."""
+        if not role_ids:
+            return []
+
+        filters = [
+            RoleScreenPermission.role_id.in_(role_ids),
+            RoleScreenPermission.screen_id == screen_id,
+        ]
+
+        if client_id is None:
+            filters.append(RoleScreenPermission.client_id.is_(None))
+        else:
+            filters.append(
                 or_(
                     RoleScreenPermission.client_id == client_id,
                     RoleScreenPermission.client_id.is_(None)
                 )
-            ))
+            )
+
+        query = (
+            select(RoleScreenPermission)
+            .options(joinedload(RoleScreenPermission.role))
+            .where(and_(*filters))
         )
+
         result = await self.session.execute(query)
-        return list(result.scalars().all())
+        permissions = list(result.scalars().all())
+
+        if client_id is None or not permissions:
+            return permissions
+
+        # Prefer client-specific rows when both scoped and global entries exist.
+        preferred_by_role: Dict[int, RoleScreenPermission] = {}
+        for permission in permissions:
+            role_id_value = getattr(permission, "role_id", None)
+            if role_id_value is None:
+                continue
+
+            role_id_value = int(role_id_value)
+            existing = preferred_by_role.get(role_id_value)
+
+            if existing is None:
+                preferred_by_role[role_id_value] = permission
+                continue
+
+            is_current_exact = getattr(permission, "client_id", None) == client_id
+            is_existing_exact = getattr(existing, "client_id", None) == client_id
+
+            if is_current_exact and not is_existing_exact:
+                preferred_by_role[role_id_value] = permission
+
+        return list(preferred_by_role.values())
     
     async def _check_action_permission(self, permission, action: PermissionAction) -> Optional[bool]:
         """Check if permission object grants specific action"""

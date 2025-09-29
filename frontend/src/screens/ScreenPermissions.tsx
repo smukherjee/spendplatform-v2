@@ -1,11 +1,16 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { api } from '../services/api';
+import {
+  api,
+  fetchClients,
+  fetchCurrentUser,
+  fetchRoles,
+  Client as ApiClient,
+  Role as ApiRole
+} from '../services/api';
 import { invalidatePermissionCache } from '../services/permissions';
 
-interface Role {
-  id: number;
-  name: string;
-}
+type Role = ApiRole;
+type Client = ApiClient;
 
 type ActionPermissionField = 'can_view' | 'can_create' | 'can_edit' | 'can_delete' | 'can_export' | 'can_import';
 type PermissionField = ActionPermissionField | 'allow_full_access' | 'deny_access';
@@ -57,8 +62,6 @@ const SPECIAL_LABELS: Record<Exclude<PermissionField, ActionPermissionField>, st
   deny_access: 'Deny Access'
 };
 
-const DEFAULT_CLIENT_ID = 1;
-
 export default function ScreenPermissions() {
   const [roles, setRoles] = useState<Role[]>([]);
   const [selectedRole, setSelectedRole] = useState<number | null>(null);
@@ -68,7 +71,41 @@ export default function ScreenPermissions() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [hasChanges, setHasChanges] = useState(false);
-  const [activeClientId, setActiveClientId] = useState<number | null>(DEFAULT_CLIENT_ID);
+  const [activeClientId, setActiveClientId] = useState<number | null>(null);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+
+  const resolveClientLabel = useCallback(
+    (clientId: number | null) => {
+      if (clientId === null) {
+        return 'All Clients';
+      }
+      const client = clients.find(c => c.id === clientId);
+      if (client?.name) {
+        return client.name;
+      }
+      return `Client ${clientId}`;
+    },
+    [clients]
+  );
+
+  const formatRoleLabel = useCallback(
+    (role: Role) => {
+      if (!isSuperAdmin) {
+        return role.name;
+      }
+
+      if (activeClientId === null) {
+        if (role.client_id === null || role.client_id === undefined) {
+          return `${role.name} · Global`;
+        }
+        return `${role.name} · ${resolveClientLabel(role.client_id ?? null)}`;
+      }
+
+      return role.name;
+    },
+    [activeClientId, isSuperAdmin, resolveClientLabel]
+  );
 
   const fetchRolePermissions = useCallback(
     async (roleId: number, clientIdOverride?: number | null) => {
@@ -76,20 +113,17 @@ export default function ScreenPermissions() {
         setMatrixLoading(true);
         setMessage('');
 
-        const effectiveClientId = clientIdOverride ?? activeClientId ?? undefined;
-        const config =
-          effectiveClientId !== undefined
-            ? { params: { client_id: effectiveClientId } }
+        const hasOverride = clientIdOverride !== undefined;
+        const computedClientId = hasOverride ? clientIdOverride : activeClientId;
+        const requestConfig =
+          computedClientId !== null && computedClientId !== undefined
+            ? { params: { client_id: computedClientId } }
             : undefined;
 
-        const response = await api.get(`/screen-permissions/roles/${roleId}/permissions`, config);
+        const response = await api.get(`/screen-permissions/roles/${roleId}/permissions`, requestConfig);
         const matrix: RolePermissionsMatrix = response.data;
 
         setPermissionsMatrix(matrix);
-        setActiveClientId(prev => {
-          const nextClientId = matrix.client_id ?? (effectiveClientId ?? null);
-          return prev === nextClientId ? prev : nextClientId;
-        });
         setHasChanges(false);
       } catch (error) {
         console.error('Error fetching role permissions:', error);
@@ -101,38 +135,103 @@ export default function ScreenPermissions() {
     [activeClientId]
   );
 
-  const loadInitialData = useCallback(async () => {
+  const loadRolesAndPermissions = useCallback(
+    async (clientScope: number | null | undefined) => {
+      try {
+        const normalizedClient = clientScope ?? null;
+        setActiveClientId(normalizedClient);
+        setMessage('');
+
+        const roleList = await fetchRoles(normalizedClient);
+        setRoles(roleList);
+
+        if (roleList.length > 0) {
+          const defaultRole = roleList[0];
+          setSelectedRole(defaultRole.id);
+
+          const permissionClientId =
+            normalizedClient !== null ? normalizedClient : defaultRole.client_id ?? null;
+
+          await fetchRolePermissions(defaultRole.id, permissionClientId);
+        } else {
+          setSelectedRole(null);
+          setPermissionsMatrix(null);
+        }
+      } catch (error) {
+        console.error('Error loading roles:', error);
+        setMessage('Error loading roles');
+        setRoles([]);
+        setSelectedRole(null);
+        setPermissionsMatrix(null);
+      }
+    },
+    [fetchRolePermissions]
+  );
+
+  const initialize = useCallback(async () => {
     try {
       setLoading(true);
       setMessage('');
-      const rolesRes = await api.get('/roles');
-      const roleList: Role[] = rolesRes.data || [];
-      setRoles(roleList);
 
-      const defaultRoleId = roleList.length > 0 ? roleList[0].id : null;
-      if (defaultRoleId) {
-        setSelectedRole(defaultRoleId);
-        await fetchRolePermissions(defaultRoleId, DEFAULT_CLIENT_ID);
-      } else {
-        setPermissionsMatrix(null);
+      const userProfile = await fetchCurrentUser();
+      const roleNames: string[] = Array.isArray(userProfile?.roles) ? userProfile.roles : [];
+      const userIsSuperAdmin = roleNames.some(role => role?.toLowerCase() === 'superadmin');
+      setIsSuperAdmin(userIsSuperAdmin);
+
+      let clientScope: number | null | undefined = userProfile?.client_id ?? null;
+
+      if (userIsSuperAdmin) {
+        try {
+          const clientList = await fetchClients();
+          setClients(clientList);
+        } catch (clientError) {
+          console.error('Error loading clients:', clientError);
+          setMessage('Error loading clients');
+          setClients([]);
+        }
+        // Start in global context; admin can refine via dropdown
+        clientScope = null;
       }
+
+      await loadRolesAndPermissions(clientScope);
     } catch (error) {
-      console.error('Error loading roles:', error);
-      setMessage('Error loading roles');
+      console.error('Error loading screen permissions data:', error);
+      setMessage('Error loading screen permissions data');
+      setRoles([]);
+      setSelectedRole(null);
+      setPermissionsMatrix(null);
     } finally {
       setLoading(false);
     }
-  }, [fetchRolePermissions]);
+  }, [loadRolesAndPermissions]);
 
   useEffect(() => {
-    loadInitialData();
-  }, [loadInitialData]);
+    initialize();
+  }, [initialize]);
 
   const handleRoleSelection = (roleId: number) => {
     if (roleId === selectedRole) return;
     setSelectedRole(roleId);
-    fetchRolePermissions(roleId);
+    const role = roles.find(r => r.id === roleId);
+    const permissionClientId =
+      activeClientId !== null ? activeClientId : role?.client_id ?? null;
+    fetchRolePermissions(roleId, permissionClientId);
   };
+
+  const handleClientScopeChange = useCallback(
+    (event: React.ChangeEvent<HTMLSelectElement>) => {
+      const value = event.target.value;
+      let nextClientId: number | null = null;
+      if (value !== '' && value !== 'all') {
+        const parsed = Number(value);
+        nextClientId = Number.isNaN(parsed) ? null : parsed;
+      }
+
+      setMessage('');
+      loadRolesAndPermissions(nextClientId);
+    },
+    [loadRolesAndPermissions]
+  );
 
   const togglePermission = (screenId: number, field: PermissionField) => {
     setPermissionsMatrix(prev => {
@@ -188,8 +287,9 @@ export default function ScreenPermissions() {
       setSaving(true);
       setMessage('');
 
+      const clientIdForPayload = permissionsMatrix.client_id ?? activeClientId ?? undefined;
       const payload = {
-        client_id: activeClientId,
+        ...(clientIdForPayload !== undefined ? { client_id: clientIdForPayload } : {}),
         screens: permissionsMatrix.screens.map(screen => ({
           screen_id: screen.screen_id,
           can_view: screen.can_view,
@@ -203,12 +303,13 @@ export default function ScreenPermissions() {
         }))
       };
 
-      await api.put(`/screen-permissions/roles/${selectedRole}/permissions`, payload);
+  await api.put(`/screen-permissions/roles/${selectedRole}/permissions`, payload);
       invalidatePermissionCache();
       setMessage('✅ Permissions saved successfully');
       setHasChanges(false);
 
-      await fetchRolePermissions(selectedRole);
+      const refreshClientId = permissionsMatrix.client_id ?? activeClientId ?? null;
+      await fetchRolePermissions(selectedRole, refreshClientId);
     } catch (error) {
       console.error('Error saving permissions:', error);
       setMessage('Error saving permissions');
@@ -275,7 +376,8 @@ export default function ScreenPermissions() {
           {permissionsMatrix && (
             <div style={{ marginTop: '0.5rem', color: '#6b7280', fontSize: '0.9rem' }}>
               Role: <strong>{permissionsMatrix.role_name}</strong>
-              {activeClientId !== null && ` · Client ID: ${activeClientId}`}
+              {' · Scope: '}
+              <strong>{resolveClientLabel(permissionsMatrix.client_id ?? activeClientId ?? null)}</strong>
             </div>
           )}
         </div>
@@ -333,7 +435,34 @@ export default function ScreenPermissions() {
           }}
         >
           <h3 style={{ marginTop: 0, color: '#374151' }}>Select Role</h3>
+          {isSuperAdmin && (
+            <div style={{ marginTop: '1rem', marginBottom: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#4b5563' }}>Client Scope</label>
+              <select
+                value={activeClientId === null ? 'all' : String(activeClientId)}
+                onChange={handleClientScopeChange}
+                style={{
+                  padding: '0.6rem 0.75rem',
+                  borderRadius: '0.5rem',
+                  border: '1px solid #d1d5db',
+                  fontSize: '0.95rem',
+                  color: '#111827',
+                  backgroundColor: 'white'
+                }}
+              >
+                <option value="all">All Clients</option>
+                {clients.map(client => (
+                  <option key={client.id} value={client.id}>
+                    {client.name ?? `Client ${client.id}`}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}>
+            {roles.length === 0 && (
+              <div style={{ color: '#6b7280', fontSize: '0.9rem' }}>No roles available for this scope.</div>
+            )}
             {roles.map(role => (
               <button
                 key={role.id}
@@ -350,7 +479,7 @@ export default function ScreenPermissions() {
                   transition: 'all 0.2s'
                 }}
               >
-                {role.name}
+                {formatRoleLabel(role)}
               </button>
             ))}
           </div>

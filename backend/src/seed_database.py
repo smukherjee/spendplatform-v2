@@ -21,6 +21,7 @@ from models.currency import Currency
 from models.unit_of_measure import UnitOfMeasure
 from models.client_settings import ClientSettings
 from datetime import date, datetime
+from typing import Dict, Optional
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -62,33 +63,74 @@ def seed_database():
         logger.info("✅ Created clients")
         
         # 2. Create Roles (RBAC)
-        roles = [
-            Role(id=1, name="superadmin", permissions={
+        logger.info("Creating role hierarchy...")
+
+        superadmin_role = Role(
+            id=1,
+            name="superadmin",
+            permissions={
                 "clients": ["create", "read", "update", "delete"],
                 "users": ["create", "read", "update", "delete"],
                 "all_entities": ["create", "read", "update", "delete"],
                 "config": ["read", "update"],
                 "reports": ["create", "read", "update", "delete"]
-            }),
-            Role(id=2, name="client_admin", permissions={
-                "users": ["create", "read", "update", "delete"],
-                "all_entities": ["create", "read", "update", "delete"],
-                "config": ["read", "update"],
-                "reports": ["create", "read", "update", "delete"]
-            }),
-            Role(id=3, name="user", permissions={
-                "invoices": ["create", "read", "update"],
-                "suppliers": ["read"],
-                "business_units": ["read"],
-                "regions": ["read"],
-                "reports": ["read"]
-            })
-        ]
-        
-        for role in roles:
-            db.add(role)
+            },
+            hierarchy_level=0,
+            client_id=None,
+            parent_role_id=None
+        )
+        db.add(superadmin_role)
+        db.flush()
+
+        role_lookup: Dict[tuple[str, Optional[int]], Role] = {("superadmin", None): superadmin_role}
+
+        for client in clients:
+            client_identifier = getattr(client, "id", None)
+            if client_identifier in (None, 0):
+                # Skip the global pseudo-client when generating tenant roles
+                continue
+
+            client_id_value = int(client_identifier)
+
+            client_admin_role = Role(
+                name="client_admin",
+                permissions={
+                    "users": ["create", "read", "update", "delete"],
+                    "all_entities": ["create", "read", "update", "delete"],
+                    "config": ["read", "update"],
+                    "reports": ["create", "read", "update", "delete"]
+                },
+                hierarchy_level=1,
+                client_id=client_id_value,
+                parent_role=superadmin_role
+            )
+            db.add(client_admin_role)
+            db.flush()
+            role_lookup[("client_admin", client_id_value)] = client_admin_role
+
+            user_role = Role(
+                name="user",
+                permissions={
+                    "invoices": ["create", "read", "update"],
+                    "suppliers": ["read"],
+                    "business_units": ["read"],
+                    "regions": ["read"],
+                    "reports": ["read"]
+                },
+                hierarchy_level=2,
+                client_id=client_id_value,
+                parent_role=client_admin_role
+            )
+            db.add(user_role)
+            db.flush()
+            role_lookup[("user", client_id_value)] = user_role
+
         db.commit()
         logger.info("✅ Created roles")
+
+        role_id_lookup: Dict[tuple[str, Optional[int]], int] = {
+            key: getattr(role_obj, "id") for key, role_obj in role_lookup.items()
+        }
         
         # 3. Create Users with proper password hashing
         users = [
@@ -149,15 +191,23 @@ def seed_database():
         logger.info("✅ Created users with secure passwords")
         
         # 4. Assign roles to users using relationship
+        def resolve_role_id(role_name: str, client_id: Optional[int]) -> int:
+            key = (role_name, client_id)
+            if key in role_id_lookup:
+                resolved = role_id_lookup[key]
+                if resolved is not None:
+                    return resolved
+            raise ValueError(f"Role '{role_name}' for client '{client_id}' not found during seeding")
+
         user_role_assignments = [
-            (1, 1),  # superadmin -> superadmin
-            (2, 2),  # acme_admin -> client_admin
-            (3, 3),  # acme_user1 -> user
-            (4, 3),  # acme_user2 -> user
-            (5, 2),  # global_admin -> client_admin
-            (6, 3),  # global_user1 -> user
-            (7, 2),  # tech_admin -> client_admin
-            (8, 3),  # tech_user1 -> user
+            (1, resolve_role_id("superadmin", None)),
+            (2, resolve_role_id("client_admin", 1)),
+            (3, resolve_role_id("user", 1)),
+            (4, resolve_role_id("user", 1)),
+            (5, resolve_role_id("client_admin", 2)),
+            (6, resolve_role_id("user", 2)),
+            (7, resolve_role_id("client_admin", 3)),
+            (8, resolve_role_id("user", 3)),
         ]
         
         # Insert into the association table

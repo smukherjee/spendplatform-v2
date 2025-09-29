@@ -9,13 +9,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from pydantic import BaseModel, EmailStr
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 import logging
 
 from database_async import get_async_db
-from utils import create_access_token, get_current_user_async
+from utils import create_access_token, get_current_user_async, normalize_role_names
 from cache_async import redis_cache
 from models.user import User
+from models.role import Role
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/auth", tags=["authentication-async"])
@@ -48,6 +49,34 @@ class MessageResponse(BaseModel):
     success: bool = True
 
 
+def _collect_role_context(user: User) -> Dict[str, Any]:
+    role_objects: List[Role] = list(getattr(user, "roles", []) or [])
+    normalized_names = normalize_role_names([getattr(role, "name", "") for role in role_objects])
+
+    role_levels = {
+        getattr(role, "name", "").strip().lower(): getattr(role, "hierarchy_level")
+        for role in role_objects
+        if getattr(role, "hierarchy_level", None) is not None
+    }
+
+    role_details = [
+        {
+            "id": getattr(role, "id", None),
+            "name": getattr(role, "name", None),
+            "hierarchy_level": getattr(role, "hierarchy_level", None),
+            "client_id": getattr(role, "client_id", None),
+            "parent_role_id": getattr(role, "parent_role_id", None)
+        }
+        for role in role_objects
+    ]
+
+    return {
+        "names": normalized_names,
+        "levels": role_levels,
+        "details": role_details
+    }
+
+
 @router.post("/login", response_model=LoginResponse)
 async def login(
     login_data: LoginRequest,
@@ -69,8 +98,8 @@ async def login(
                 detail="Invalid credentials"
             )
 
-        # Get user roles
-        roles = [role.name for role in user.roles] if user.roles else []
+        role_context = _collect_role_context(user)
+        roles = role_context["names"]
 
         # Create access token
         access_token = create_access_token(
@@ -78,7 +107,8 @@ async def login(
                 "sub": user.username,
                 "user_id": user.id,
                 "client_id": user.client_id,
-                "roles": roles
+                "roles": roles,
+                "role_levels": role_context["levels"]
             }
         )
 
@@ -88,7 +118,9 @@ async def login(
             "user_id": user.id,
             "username": user.username,
             "client_id": user.client_id,
-            "roles": roles
+            "roles": roles,
+            "role_levels": role_context["levels"],
+            "role_details": role_context["details"]
         }
         await redis_cache.set(cache_key, session_data, expire=3600)  # 1 hour
 
@@ -103,6 +135,7 @@ async def login(
                 "email": user.email,
                 "client_id": user.client_id,
                 "roles": roles,
+                "role_details": role_context["details"],
                 "personalisation": user.personalisation
             },
             client_id=getattr(user, 'client_id', 0)
@@ -157,8 +190,8 @@ async def login_for_access_token(
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
-        # Get user roles
-        roles = [role.name for role in user.roles] if user.roles else []
+        role_context = _collect_role_context(user)
+        roles = role_context["names"]
 
         # Create access token
         access_token = create_access_token(
@@ -166,7 +199,8 @@ async def login_for_access_token(
                 "sub": user.username,
                 "user_id": user.id,
                 "client_id": user.client_id,
-                "roles": roles
+                "roles": roles,
+                "role_levels": role_context["levels"]
             }
         )
 
@@ -176,7 +210,9 @@ async def login_for_access_token(
             "user_id": user.id,
             "username": user.username,
             "client_id": user.client_id,
-            "roles": roles
+            "roles": roles,
+            "role_levels": role_context["levels"],
+            "role_details": role_context["details"]
         }
         await redis_cache.set(cache_key, session_data, expire=3600)  # 1 hour
 
@@ -186,7 +222,9 @@ async def login_for_access_token(
             "access_token": access_token,
             "token_type": "bearer",
             "client_id": user.client_id,
-            "user_id": user.id
+            "user_id": user.id,
+            "roles": roles,
+            "role_details": role_context["details"]
         }
 
     except Exception as e:
@@ -235,7 +273,17 @@ async def get_current_user_info(
             "username": current_user.username,
             "email": current_user.email,
             "client_id": getattr(current_user, 'client_id', None),
-            "roles": [role.name for role in current_user.roles] if current_user.roles else [],
+            "roles": normalize_role_names([role.name for role in current_user.roles]) if current_user.roles else [],
+            "role_details": [
+                {
+                    "id": getattr(role, "id", None),
+                    "name": getattr(role, "name", None),
+                    "hierarchy_level": getattr(role, "hierarchy_level", None),
+                    "client_id": getattr(role, "client_id", None),
+                    "parent_role_id": getattr(role, "parent_role_id", None)
+                }
+                for role in getattr(current_user, "roles", []) or []
+            ],
             "personalisation": getattr(current_user, 'personalisation', None)
         }
         

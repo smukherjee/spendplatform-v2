@@ -46,40 +46,113 @@ def add_test_data():
         client_id = client.id
         logger.info(f"Using client: {client.name} (ID: {client_id})")
         
-        # Add more roles if needed
-        existing_roles = db.query(Role).count()
-        if existing_roles < 3:
-            roles_to_add = []
-            if not db.query(Role).filter(Role.name == "superadmin").first():
-                roles_to_add.append(Role(name="superadmin", permissions={
+        # Ensure baseline role hierarchy exists
+        role_changes = False
+
+        superadmin_role = (
+            db.query(Role)
+            .filter(Role.name == "superadmin", Role.client_id.is_(None))
+            .one_or_none()
+        )
+
+        if not superadmin_role:
+            superadmin_role = Role(
+                name="superadmin",
+                permissions={
                     "clients": ["create", "read", "update", "delete"],
                     "users": ["create", "read", "update", "delete"],
                     "all_entities": ["create", "read", "update", "delete"],
                     "config": ["read", "update"],
                     "reports": ["create", "read", "update", "delete"]
-                }))
-            
-            if not db.query(Role).filter(Role.name == "client_admin").first():
-                roles_to_add.append(Role(name="client_admin", permissions={
+                },
+                hierarchy_level=0,
+                client_id=None,
+                parent_role_id=None
+            )
+            db.add(superadmin_role)
+            db.flush()
+            role_changes = True
+        else:
+            if getattr(superadmin_role, "hierarchy_level", None) != 0:
+                setattr(superadmin_role, "hierarchy_level", 0)
+                role_changes = True
+            if getattr(superadmin_role, "client_id", None) is not None:
+                setattr(superadmin_role, "client_id", None)
+                role_changes = True
+            if getattr(superadmin_role, "parent_role_id", None) is not None:
+                setattr(superadmin_role, "parent_role_id", None)
+                role_changes = True
+
+        client_admin_role = (
+            db.query(Role)
+            .filter(Role.name == "client_admin", Role.client_id == client_id)
+            .one_or_none()
+        )
+
+        if not client_admin_role:
+            client_admin_role = Role(
+                name="client_admin",
+                permissions={
                     "users": ["create", "read", "update", "delete"],
                     "all_entities": ["create", "read", "update", "delete"],
                     "config": ["read", "update"],
                     "reports": ["create", "read", "update", "delete"]
-                }))
-            
-            if not db.query(Role).filter(Role.name == "user").first():
-                roles_to_add.append(Role(name="user", permissions={
+                },
+                hierarchy_level=1,
+                client_id=client_id,
+                parent_role_id=superadmin_role.id
+            )
+            db.add(client_admin_role)
+            db.flush()
+            role_changes = True
+        else:
+            if getattr(client_admin_role, "hierarchy_level", None) != 1:
+                setattr(client_admin_role, "hierarchy_level", 1)
+                role_changes = True
+            if getattr(client_admin_role, "client_id", None) != client_id:
+                setattr(client_admin_role, "client_id", client_id)
+                role_changes = True
+            if getattr(client_admin_role, "parent_role_id", None) != superadmin_role.id:
+                setattr(client_admin_role, "parent_role_id", superadmin_role.id)
+                role_changes = True
+
+        user_role = (
+            db.query(Role)
+            .filter(Role.name == "user", Role.client_id == client_id)
+            .one_or_none()
+        )
+
+        if not user_role:
+            user_role = Role(
+                name="user",
+                permissions={
                     "invoices": ["create", "read", "update"],
                     "suppliers": ["read"],
                     "business_units": ["read"],
                     "regions": ["read"],
                     "reports": ["read"]
-                }))
-            
-            for role in roles_to_add:
-                db.add(role)
+                },
+                hierarchy_level=2,
+                client_id=client_id,
+                parent_role_id=client_admin_role.id
+            )
+            db.add(user_role)
+            db.flush()
+            role_changes = True
+        else:
+            if getattr(user_role, "hierarchy_level", None) != 2:
+                setattr(user_role, "hierarchy_level", 2)
+                role_changes = True
+            if getattr(user_role, "client_id", None) != client_id:
+                setattr(user_role, "client_id", client_id)
+                role_changes = True
+            if getattr(user_role, "parent_role_id", None) != client_admin_role.id:
+                setattr(user_role, "parent_role_id", client_admin_role.id)
+                role_changes = True
+
+        if role_changes:
             db.commit()
-            logger.info(f"✅ Added {len(roles_to_add)} roles")
+            logger.info("✅ Baseline roles ensured and updated")
         
         # Add business units
         if db.query(BusinessUnit).count() == 0:

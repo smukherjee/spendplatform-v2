@@ -20,6 +20,57 @@ from schemas.screen_permission import RolePermissionsMatrixUpdate
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/screen-permissions", tags=["screen-permissions-async"])
 
+
+def _is_superadmin_user(user: User) -> bool:
+    return any(
+        getattr(role, "hierarchy_level", None) == 0 or getattr(role, "name", "").lower() == "superadmin"
+        for role in getattr(user, "roles", []) or []
+    )
+
+
+def _resolve_user_level(user: User) -> int:
+    levels = []
+    for role in getattr(user, "roles", []) or []:
+        level = getattr(role, "hierarchy_level", None)
+        if isinstance(level, int):
+            levels.append(level)
+    return min(levels) if levels else 999
+
+
+def _user_can_access_role(user: User, target_role: Role, requested_client_id: Optional[int]) -> bool:
+    if target_role is None:
+        return False
+
+    if _is_superadmin_user(user):
+        return True
+
+    user_level = _resolve_user_level(user)
+    role_level_raw = getattr(target_role, "hierarchy_level", None)
+    role_level = role_level_raw if isinstance(role_level_raw, int) else 999
+
+    if role_level < user_level:
+        return False
+
+    user_client_id = getattr(user, "client_id", None)
+    role_client_id = getattr(target_role, "client_id", None)
+    effective_client_id = requested_client_id if requested_client_id is not None else role_client_id
+
+    if role_client_id is None and role_level > user_level:
+        # Global roles above the current user's level are inaccessible
+        return False
+
+    if role_client_id is not None and role_client_id != user_client_id:
+        return False
+
+    if effective_client_id is not None and effective_client_id != user_client_id:
+        return False
+
+    return True
+
+
+def _filter_roles_by_access(user: User, roles: List[Role], client_id: Optional[int]) -> List[Role]:
+    return [role for role in roles if _user_can_access_role(user, role, client_id)]
+
 @router.get("/screens", summary="List all screens")
 async def get_screens(
     active_only: bool = Query(True, description="Filter by active screens only"),
@@ -164,9 +215,17 @@ async def get_role_screen_permissions(
     """Get screen permissions for a specific role"""
     try:
         logger.info(f"Fetching role permissions for role_id={role_id}, client_id={client_id}")
-        # Permission check - only admins can view role permissions
-        is_admin = any(role.name.lower() in ['superadmin', 'client_admin'] for role in current_user.roles)
-        if not is_admin:
+
+        target_role = await db.get(Role, role_id)
+        if target_role is None or getattr(target_role, "is_deleted", False):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Role not found"
+            )
+
+        effective_client_id = client_id if client_id is not None else getattr(target_role, "client_id", None)
+
+        if not _user_can_access_role(current_user, target_role, effective_client_id):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Insufficient permissions to view role permissions"
@@ -174,8 +233,12 @@ async def get_role_screen_permissions(
 
         # Use permission service
         permission_service = PermissionService(db)
-        logger.info(f"Calling PermissionService.get_role_permissions_matrix with role_id={role_id}, client_id={client_id}")
-        permissions_matrix = await permission_service.get_role_permissions_matrix(role_id, client_id)
+        logger.info(
+            "Calling PermissionService.get_role_permissions_matrix with role_id=%s, client_id=%s",
+            role_id,
+            effective_client_id
+        )
+        permissions_matrix = await permission_service.get_role_permissions_matrix(role_id, effective_client_id)
 
         if not permissions_matrix:
             raise HTTPException(
@@ -205,9 +268,16 @@ async def update_role_screen_permissions(
 ):
     """Update screen permissions for a specific role"""
     try:
-        # Permission check - only admins can modify role permissions
-        is_admin = any(role.name.lower() in ['superadmin', 'client_admin'] for role in current_user.roles)
-        if not is_admin:
+        target_role = await db.get(Role, role_id)
+        if target_role is None or getattr(target_role, "is_deleted", False):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Role not found"
+            )
+
+        effective_client_id = payload.client_id if payload.client_id is not None else getattr(target_role, "client_id", None)
+
+        if not _user_can_access_role(current_user, target_role, effective_client_id):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Insufficient permissions to modify role permissions"
@@ -219,8 +289,8 @@ async def update_role_screen_permissions(
             for screen in payload.screens
         ]
 
-        await permission_service.update_role_permissions_matrix(role_id, payload.client_id, screen_payload)
-        updated_matrix = await permission_service.get_role_permissions_matrix(role_id, payload.client_id)
+        await permission_service.update_role_permissions_matrix(role_id, effective_client_id, screen_payload)
+        updated_matrix = await permission_service.get_role_permissions_matrix(role_id, effective_client_id)
 
         if not updated_matrix:
             raise HTTPException(
@@ -231,7 +301,7 @@ async def update_role_screen_permissions(
         return {
             "message": "Role permissions updated successfully",
             "role_id": role_id,
-            "client_id": payload.client_id,
+            "client_id": effective_client_id,
             "permissions": updated_matrix
         }
 
@@ -247,20 +317,31 @@ async def update_role_screen_permissions(
 @router.get("/admin/role-permissions-flat", summary="Get all role permissions in flat format (Admin only)")
 async def get_all_role_permissions_flat(
     client_id: Optional[int] = Query(None, description="Filter by client ID"),
+    current_user: User = Depends(get_current_user_async),
     db: AsyncSession = Depends(get_async_db)
 ):
     """Get all role-screen permissions in flat format for admin UI"""
     try:
+        effective_client_id = client_id
+        if not _is_superadmin_user(current_user):
+            user_client_id = getattr(current_user, "client_id", None)
+            if client_id is not None and client_id != user_client_id:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Forbidden for requested client"
+                )
+            effective_client_id = user_client_id
+
         # Get all role screen permissions with related data
         query = select(RoleScreenPermission).options(
             selectinload(RoleScreenPermission.screen),
             selectinload(RoleScreenPermission.role)
         )
         
-        if client_id:
+        if effective_client_id:
             query = query.where(
                 or_(
-                    RoleScreenPermission.client_id == client_id,
+                    RoleScreenPermission.client_id == effective_client_id,
                     RoleScreenPermission.client_id.is_(None)
                 )
             )
@@ -271,7 +352,7 @@ async def get_all_role_permissions_flat(
         # Format for frontend ScreenPermissions component
         formatted_permissions = []
         for perm in permissions:
-            if perm.screen and perm.role:
+            if perm.screen and perm.role and _user_can_access_role(current_user, perm.role, effective_client_id):
                 formatted_permissions.append({
                     "id": perm.id,
                     "role_id": perm.role_id,
@@ -307,42 +388,49 @@ async def get_all_role_permissions(
 ):
     """Get comprehensive role-screen permissions mapping (Admin access required)"""
     try:
-        # Permission check - only admins can view all role permissions
-        is_admin = any(role.name.lower() in ['superadmin', 'client_admin'] for role in current_user.roles)
-        if not is_admin:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Insufficient permissions to view role permissions"
-            )
-        
-        # Check cache first
-        cache_key = f"all_role_permissions:{client_id or 'global'}"
+        is_superadmin = _is_superadmin_user(current_user)
+        user_client_id = getattr(current_user, "client_id", None)
+
+        effective_client_id = client_id
+        if not is_superadmin:
+            if client_id is not None and client_id != user_client_id:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Forbidden for requested client"
+                )
+            effective_client_id = user_client_id
+
+        # Check cache first (per-user scope to respect hierarchy)
+        cache_key = f"all_role_permissions:{current_user.id}:{effective_client_id or 'global'}"
         cached_result = await redis_cache.get(cache_key)
         if cached_result:
             return cached_result
-        
-        # Get all roles
-        roles_query = select(Role).order_by(Role.name)
+
+        # Get all roles and filter by access
+        roles_query = select(Role).where(Role.is_deleted == False).order_by(Role.hierarchy_level, Role.name)
         roles_result = await db.execute(roles_query)
-        roles = roles_result.scalars().all()
-        
+        roles = list(roles_result.scalars().all())
+        accessible_roles = _filter_roles_by_access(current_user, roles, effective_client_id)
+
         # Build comprehensive permissions
         all_permissions = []
         permission_service = PermissionService(db)
         
-        for role in roles:
-            # TODO: Fix type issue with permission_service
-            # permissions_matrix = await permission_service.get_role_permissions_matrix(role.id, client_id)
-            # if permissions_matrix:
-            #     all_permissions.append(permissions_matrix)
-            pass
+        for role in accessible_roles:
+            target_client = effective_client_id if effective_client_id is not None else getattr(role, "client_id", None)
+            role_id_value = getattr(role, "id", None)
+            if not isinstance(role_id_value, int):
+                continue
+            matrix = await permission_service.get_role_permissions_matrix(role_id_value, target_client)
+            if matrix:
+                all_permissions.append(matrix)
         
         result = {
-            "client_id": client_id,
+            "client_id": effective_client_id,
             "total_roles": len(all_permissions),
             "role_permissions": all_permissions
         }
-        
+
         # Cache for 15 minutes
         await redis_cache.set(cache_key, result, expire=900)
         
@@ -367,13 +455,14 @@ async def invalidate_user_permissions_cache(
     """Invalidate cached permissions for a specific user"""
     try:
         # Permission check - only admins or the user themselves
-        is_admin = any(role.name.lower() in ['superadmin', 'client_admin'] for role in current_user.roles)
-        # TODO: Fix type issue with user ID comparison
-        # if not is_admin and current_user.id != user_id:
-        #     raise HTTPException(
-        #         status_code=status.HTTP_403_FORBIDDEN,
-        #         detail="Insufficient permissions to invalidate user cache"
-        #     )
+        is_admin = _is_superadmin_user(current_user) or _resolve_user_level(current_user) <= 1
+        if not is_admin:
+            current_user_id = getattr(current_user, "id", None)
+            if current_user_id != user_id:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Insufficient permissions to invalidate user cache"
+                )
         
         # Use permission service
         permission_service = PermissionService(db)
