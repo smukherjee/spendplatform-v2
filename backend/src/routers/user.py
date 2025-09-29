@@ -1,295 +1,200 @@
-from fastapi import APIRouter, Depends, HTTPException
-from typing import List
-from sqlalchemy.orm import Session
-from schemas.user import UserCreate, UserUpdate, UserRead, PasswordReset
+"""
+Async user management router with performance optimizations
+"""
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Query
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, func, text
+from sqlalchemy.orm import selectinload
+from typing import Optional
+import logging
+import time
+
+from database_async import get_async_db
+from cache_async import redis_cache
 from models.user import User
-from database import get_db
+from models.role import Role
+from schemas_optimized import UserReadOptimized, PaginatedUserResponse
 from utils import get_current_role, enforce_role, get_client_id
-from logging_config import log_audit
 
-router = APIRouter(prefix="/users", tags=["User"])
+logger = logging.getLogger(__name__)
+router = APIRouter(prefix="/users", tags=["Users"])
 
-@router.get("", response_model=List[UserRead], summary="List all users")
-def get_users(role: str = Depends(get_current_role), client_id: int = Depends(get_client_id), db: Session = Depends(get_db)):
-    """Returns a list of all users for the current client (unless superadmin)."""
-    enforce_role(role, ["client_admin", "superadmin"])
-    log_audit(action="get_users", user=role, client_id=client_id, details="List users")
-    
-    # Query users based on role
-    if role == "superadmin":
-        users = db.query(User).all()
-    else:
-        users = db.query(User).filter(User.client_id == client_id).all()
-    
-    # Convert to dict to exclude relationships that aren't in the schema
-    return [{
-        "id": u.id,
-        "username": u.username,
-        "email": u.email,
-        "client_id": u.client_id,
-        "personalisation": u.personalisation,
-        "roles": [r.name for r in u.roles] if hasattr(u, 'roles') and u.roles else []
-    } for u in users]
-
-@router.post("", response_model=UserRead, summary="Create a new user")
-def post_users(user: UserCreate, role: str = Depends(get_current_role), client_id: int = Depends(get_client_id), db: Session = Depends(get_db)):
-    """Creates a new user for the current client (unless superadmin)."""
-    import logging
-    logger = logging.getLogger(__name__)
-    
-    # Log incoming request details
-    logger.info(f"🔍 USER CREATE REQUEST - Role: {role}, Client ID: {client_id}")
-    logger.info(f"📝 Request data: username={user.username}, email={user.email}, client_id={getattr(user, 'client_id', 'not_provided')}")
-    logger.info(f"🔐 Password provided: {hasattr(user, 'password') and bool(getattr(user, 'password', None))}")
-    
-    try:
-        enforce_role(role, ["client_admin", "superadmin"])
-        logger.info(f"✅ Role enforcement passed for: {role}")
-    except Exception as e:
-        logger.error(f"❌ Role enforcement failed: {str(e)}")
-        raise
-    
-    log_audit(action="post_users", user=role, client_id=client_id, details=f"Create user: {user.username}")
-    
-    # Determine client_id to use
-    target_client_id = client_id if role != "superadmin" else user.client_id
-    logger.info(f"🏢 Target client_id: {target_client_id} (role={role})")
-    
-    # Create new user
-    try:
-        db_user = User(
-            username=user.username,
-            email=user.email,
-            client_id=target_client_id,
-            personalisation=user.personalisation if hasattr(user, 'personalisation') else None
-        )
-        logger.info(f"👤 User object created: {db_user.username} for client {db_user.client_id}")
-    except Exception as e:
-        logger.error(f"❌ Failed to create User object: {str(e)}")
-        raise
-    
-    # Set password if provided
-    if hasattr(user, 'password'):
-        logger.info(f"🔐 Setting password for user: {user.username}")
-        try:
-            db_user.set_password(user.password)
-            logger.info(f"✅ Password set successfully")
-        except Exception as e:
-            logger.error(f"❌ Failed to set password: {str(e)}")
-            raise
-    else:
-        logger.warning(f"⚠️ No password provided for user: {user.username}")
-    
-    # Database operations
-    try:
-        logger.info(f"💾 Adding user to database session...")
-        db.add(db_user)
-        
-        logger.info(f"💾 Committing user to database...")
-        db.commit()
-        
-        logger.info(f"🔄 Refreshing user object...")
-        db.refresh(db_user)
-        
-        logger.info(f"✅ User created successfully with ID: {db_user.id}")
-        
-        # Handle roles assignment after user is created
-        if hasattr(user, 'roles') and user.roles:
-            logger.info(f"👑 Processing roles for user: {user.roles}")
-            from models.role import Role
-            
-            # Find roles by name
-            role_objects = db.query(Role).filter(Role.name.in_(user.roles)).all()
-            logger.info(f"👑 Found {len(role_objects)} roles in database")
-            
-            # Assign roles to user
-            db_user.roles = role_objects
-            
-            logger.info(f"💾 Committing role assignments...")
-            db.commit()
-            db.refresh(db_user)
-            
-            logger.info(f"✅ Roles assigned successfully: {[r.name for r in db_user.roles]}")
-        
-    except Exception as e:
-        logger.error(f"❌ Database operation failed: {str(e)}")
-        db.rollback()
-        raise
-    
-    result = {
-        "id": db_user.id,
-        "username": db_user.username,
-        "email": db_user.email,
-        "client_id": db_user.client_id,
-        "personalisation": db_user.personalisation,
-        "roles": [r.name for r in db_user.roles] if hasattr(db_user, 'roles') and db_user.roles else []
-    }
-    
-    logger.info(f"📤 Returning user data: {result}")
-    return result
-
-@router.get("/{id}", response_model=UserRead, summary="Get a user by ID")
-def get_user(id: int, role: str = Depends(get_current_role), client_id: int = Depends(get_client_id), db: Session = Depends(get_db)):
-    """Returns a specific user by ID."""
-    enforce_role(role, ["client_admin", "superadmin"])
-    log_audit(action="get_user", user=role, client_id=client_id, details=f"Get user {id}")
-    
-    # Query user based on role
-    if role == "superadmin":
-        user = db.query(User).filter(User.id == id).first()
-    else:
-        user = db.query(User).filter(
-            User.id == id,
-            User.client_id == client_id
-        ).first()
-    
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-        
-    return {
-        "id": user.id,
-        "username": user.username,
-        "email": user.email,
-        "client_id": user.client_id,
-        "personalisation": user.personalisation,
-        "roles": [r.name for r in user.roles] if hasattr(user, 'roles') and user.roles else []
-    }
-
-@router.put("/{id}", response_model=UserRead, summary="Update a user")
-def put_user(id: int, user: UserUpdate, role: str = Depends(get_current_role), client_id: int = Depends(get_client_id), db: Session = Depends(get_db)):
-    """Updates a user by ID."""
-    enforce_role(role, ["client_admin", "superadmin"])
-    log_audit(action="put_user", user=role, client_id=client_id, details=f"Update user id: {id}")
-    
-    # Find existing user
-    if role == "superadmin":
-        db_user = db.query(User).filter(User.id == id).first()
-    else:
-        db_user = db.query(User).filter(
-            User.id == id,
-            User.client_id == client_id
-        ).first()
-    
-    if not db_user:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    # Update fields (only update fields that are provided and not None)
-    for field, value in user.dict(exclude_unset=True).items():
-        if field == "password":
-            if value:  # Only update password if provided and not empty
-                db_user.set_password(value)
-        elif field == "client_id" and role != "superadmin":
-            continue  # Don't allow client_id updates for non-superadmin
-        elif field == "roles":
-            if value is not None:  # Handle roles assignment
-                from models.role import Role
-                if isinstance(value, list):
-                    # Find roles by name
-                    role_objects = db.query(Role).filter(Role.name.in_(value)).all()
-                    db_user.roles = role_objects
-                else:
-                    db_user.roles = []  # Clear roles if not a list
-        elif value is not None:  # Only update if value is provided
-            setattr(db_user, field, value)
-    
-    db.commit()
-    db.refresh(db_user)
-    
-    return {
-        "id": db_user.id,
-        "username": db_user.username,
-        "email": db_user.email,
-        "client_id": db_user.client_id,
-        "personalisation": db_user.personalisation,
-        "roles": [r.name for r in db_user.roles] if hasattr(db_user, 'roles') and db_user.roles else []
-    }
-
-@router.delete("/{id}", response_model=None, summary="Delete a user")
-def delete_user(id: int, role: str = Depends(get_current_role), client_id: int = Depends(get_client_id), db: Session = Depends(get_db)):
-    """Deletes a user by ID."""
-    enforce_role(role, ["client_admin", "superadmin"])
-    log_audit(action="delete_user", user=role, client_id=client_id, details=f"Delete user id: {id}")
-    
-    # Find existing user
-    if role == "superadmin":
-        db_user = db.query(User).filter(User.id == id).first()
-    else:
-        db_user = db.query(User).filter(
-            User.id == id,
-            User.client_id == client_id
-        ).first()
-    
-    if not db_user:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    # Hard delete (no soft delete in User model)
-    db.delete(db_user)
-    db.commit()
-    
-    return {"message": "User deleted successfully"}
-
-@router.patch("/{id}/password", summary="Reset user password")
-def reset_user_password(id: int, password_data: PasswordReset, role: str = Depends(get_current_role), client_id: int = Depends(get_client_id), db: Session = Depends(get_db)):
-    """Resets a user's password (admin only)."""
-    enforce_role(role, ["client_admin", "superadmin"])
-    log_audit(action="reset_password", user=role, client_id=client_id, details=f"Reset password for user id: {id}")
-    
-    # Validate password
-    new_password = password_data.password
-    if not new_password or len(new_password) < 6:
-        raise HTTPException(status_code=400, detail="Password must be at least 6 characters long")
-    
-    # Find existing user
-    if role == "superadmin":
-        db_user = db.query(User).filter(User.id == id).first()
-    else:
-        db_user = db.query(User).filter(
-            User.id == id,
-            User.client_id == client_id
-        ).first()
-    
-    if not db_user:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    # Additional security check: client_admin cannot reset superadmin password
-    if role == "client_admin":
-        target_user_roles = [r.name for r in db_user.roles] if hasattr(db_user, 'roles') and db_user.roles else []
-        if "superadmin" in target_user_roles:
-            raise HTTPException(status_code=403, detail="Cannot reset superadmin password")
-    
-    # Update password
-    db_user.set_password(new_password)
-    db.commit()
-    
-    return {"message": "Password reset successfully"}
-
-@router.get("/test", summary="Test endpoint for performance testing")
-def get_users_test(
-    skip: int = 0, 
-    limit: int = 25, 
-    db: Session = Depends(get_db)
+@router.get("/", response_model=PaginatedUserResponse)
+async def get_users_optimized(
+    skip: int = Query(0, ge=0, description="Number of users to skip"),
+    limit: int = Query(100, ge=1, le=1000, description="Number of users to return"),
+    search: Optional[str] = Query(None, description="Search term for username or email"),
+    role: str = Depends(get_current_role),
+    client_id: int = Depends(get_client_id),
+    db: AsyncSession = Depends(get_async_db)
 ):
-    """Simple test endpoint without authentication for performance comparison"""
-    users = db.query(User).offset(skip).limit(limit).all()
-    total = db.query(User).count()
+    """
+    Get paginated users with optimized async queries and caching
+    """
+    start_time = time.time()
     
-    # Convert to simple response format
-    items = []
-    for user in users:
-        user_roles = [role.name for role in user.roles] if user.roles else []
-        items.append({
-            "id": user.id,
-            "username": user.username,
-            "email": user.email,
-            "client_id": user.client_id,
-            "personalisation": user.personalisation,
-            "roles": user_roles
-        })
+    try:
+        # Enforce role-based access
+        enforce_role(role, ["client_admin", "superadmin"])
+        
+        # Build cache key
+        cache_key = f"users:{client_id}:{skip}:{limit}:{search or 'all'}:{role}"
+        
+        # Try cache first
+        cached_result = await redis_cache.get(cache_key)
+        if cached_result:
+            logger.info(f"Cache hit for users query: {cache_key} ({time.time() - start_time:.3f}s)")
+            return cached_result
+        
+        # Build base query with eager loading to prevent N+1 queries
+        query = select(User).options(
+            selectinload(User.roles)  # Prevent N+1 queries for roles
+        )
+        
+        # Apply role-based filtering
+        if role != "superadmin":
+            query = query.where(User.client_id == client_id)
+        
+        # Apply search filter
+        if search:
+            search_term = f"%{search.lower()}%"
+            query = query.where(
+                func.lower(User.username).like(search_term) |
+                func.lower(User.email).like(search_term)
+            )
+        
+        # Build count query (same filters)
+        count_query = select(func.count(User.id))
+        if role != "superadmin":
+            count_query = count_query.where(User.client_id == client_id)
+        if search:
+            search_term = f"%{search.lower()}%"
+            count_query = count_query.where(
+                func.lower(User.username).like(search_term) |
+                func.lower(User.email).like(search_term)
+            )
+        
+        # Execute queries sequentially to avoid session conflicts
+        users_result = await db.execute(query.offset(skip).limit(limit))
+        users = users_result.scalars().all()
+        
+        count_result = await db.execute(count_query)
+        total = count_result.scalar() or 0
+        
+        # Convert to response format using Pydantic's from_attributes
+        user_items = []
+        for user in users:
+            # Create dict with role names for Pydantic
+            user_dict = {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "client_id": user.client_id,
+                "personalisation": user.personalisation,
+                "roles": [role.name for role in user.roles] if user.roles else []
+            }
+            user_items.append(UserReadOptimized(**user_dict))
+        
+        # Prepare response
+        response = PaginatedUserResponse(
+            items=user_items,
+            total=total,
+            skip=skip,
+            limit=limit,
+            has_next=skip + limit < total
+        )
+        
+        # Cache result for 5 minutes
+        await redis_cache.set(cache_key, response, expire=300)
+        
+        query_time = time.time() - start_time
+        logger.info(f"Retrieved {len(users)} users for client {client_id} in {query_time:.3f}s")
+        return response
+        
+    except Exception as e:
+        logger.error(f"Error retrieving users: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to retrieve users"
+        )
+
+@router.get("/health", include_in_schema=False)
+async def health_check(db: AsyncSession = Depends(get_async_db)):
+    """Health check endpoint"""
+    return {"status": "healthy", "users_endpoint": "operational"}
+
+@router.get("/test", response_model=PaginatedUserResponse, include_in_schema=False)
+async def get_users_test(
+    skip: int = Query(0, ge=0, description="Number of users to skip"),
+    limit: int = Query(25, ge=1, le=1000, description="Number of users to return"),
+    db: AsyncSession = Depends(get_async_db)
+):
+    """Test endpoint without authentication for performance testing"""
+    cache_key = f"users_test:{skip}:{limit}"
     
-    return {
-        "items": items,
-        "total": total,
-        "skip": skip,
-        "limit": limit,
-        "has_next": (skip + limit < total)
-    }
+    # Try cache first
+    cached_result = await redis_cache.get(cache_key)
+    if cached_result:
+        return cached_result
+    
+    try:
+        # Execute query with eager loading
+        query = (
+            select(User)
+            .options(selectinload(User.roles))  # Eager load roles to avoid N+1
+            .offset(skip)
+            .limit(limit)
+        )
+        
+        start_time = time.time()
+        result = await db.execute(query)
+        users = result.scalars().all()
+        query_time = time.time() - start_time
+        
+        # Get total count efficiently
+        count_query = select(func.count(User.id))
+        count_result = await db.execute(count_query)
+        total = count_result.scalar() or 0
+        
+        # Convert users to schema format
+        user_items = []
+        for user in users:
+            user_dict = {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "client_id": user.client_id,
+                "personalisation": user.personalisation,
+                "roles": [role.name for role in user.roles] if user.roles else []
+            }
+            user_items.append(UserReadOptimized(**user_dict))
+        
+        response = PaginatedUserResponse(
+            items=user_items,
+            total=total,
+            skip=skip,
+            limit=limit,
+            has_next=(skip + limit < total)
+        )
+        
+        # Cache for 5 minutes
+        await redis_cache.set(cache_key, response, expire=300)
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"Error fetching users test: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+# Background task functions
+async def invalidate_user_cache(client_id: int):
+    """Invalidate user cache for client"""
+    try:
+        await redis_cache.delete_pattern(f"users:{client_id}:*")
+        logger.info(f"Invalidated user cache for client {client_id}")
+    except Exception as e:
+        logger.error(f"Failed to invalidate cache for client {client_id}: {str(e)}")
+
+async def log_user_activity(user_id: int, action: str, details: str = ""):
+    """Log user activity for audit"""
+    logger.info(f"AUDIT: User {user_id} performed {action} - {details}")

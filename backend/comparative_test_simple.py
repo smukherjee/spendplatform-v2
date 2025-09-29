@@ -84,8 +84,8 @@ class SimpleComparativeTester:
         ]
         
         endpoints = [
-            {"path": "/users?limit=25", "sync_path": "/api/test/users?limit=25", "async_path": "/api/v1/users-async/test?limit=25"},
-            {"path": "/users?limit=100", "sync_path": "/api/test/users?limit=100", "async_path": "/api/v1/users-async/test?limit=100"}
+            {"path": "/users?limit=25", "sync_path": "/api/test/users?limit=25", "async_path": "/api/v1/users/test?limit=25"},
+            {"path": "/users?limit=100", "sync_path": "/api/test/users?limit=100", "async_path": "/api/v1/users/test?limit=100"}
         ]
         
         all_results = []

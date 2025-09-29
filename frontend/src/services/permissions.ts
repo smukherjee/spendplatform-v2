@@ -3,7 +3,8 @@ import { useState, useEffect, useMemo } from 'react';
 
 interface PermissionCheckResponse {
   screen_route: string;
-  has_access: boolean;
+  has_access?: boolean; // legacy, not used
+  has_permission: boolean; // correct property from backend
   source: string;
   message?: string;
 }
@@ -26,17 +27,19 @@ class PermissionManager {
       // Check cache first
       const cached = this.getCachedPermission(screenRoute);
       if (cached !== null) {
-        return cached.has_access;
+        // Use has_permission from backend response
+        return cached.has_permission;
       }
 
-      // Fetch from API
-      const response = await api.get(`/screen-permissions/check?screen_route=${encodeURIComponent(screenRoute)}`);
-      const permissionData: PermissionCheckResponse = response.data;
-      
-      // Cache the result
-      this.setCachedPermission(screenRoute, permissionData);
-      
-      return permissionData.has_access;
+  // Fetch from API
+  const response = await api.get(`/screen-permissions/check?screen_route=${encodeURIComponent(screenRoute)}`);
+  const permissionData: PermissionCheckResponse = response.data;
+  // Debug log: print permission API response
+  console.log(`🛡️ Permission API response for ${screenRoute}:`, permissionData);
+  // Cache the result
+  this.setCachedPermission(screenRoute, permissionData);
+  // Use has_permission from backend response
+  return permissionData.has_permission;
     } catch (error) {
       console.error(`Error checking permission for ${screenRoute}:`, error);
       // On error, deny access by default

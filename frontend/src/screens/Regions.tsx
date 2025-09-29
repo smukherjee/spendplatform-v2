@@ -9,7 +9,11 @@ export default function Regions() {
 
   useEffect(() => {
     fetchRegions()
-      .then((data) => setRegions(data as any[]))
+      .then((data) => {
+        // Handle paginated response
+        const regionsList = data.items || data || [];
+        setRegions(regionsList as any[]);
+      })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);

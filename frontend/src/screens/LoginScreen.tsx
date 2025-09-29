@@ -34,10 +34,11 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
       const result = await apiLogin(username, password);
       addDebugLog(`✅ API login successful: ${JSON.stringify(result.user)}`);
       
-      // Call AuthContext login to update app state
+      // Call AuthContext login to update app state - WAIT for completion
       if (result.user) {
-        addDebugLog(`🔐 Updating auth context...`);
-        authLogin(result.user);
+        addDebugLog(`🔐 Updating auth context and waiting for completion...`);
+        await authLogin(result.user);
+        addDebugLog(`✅ Auth context updated - NavBar can now render safely`);
       }
       
       if (onLoginSuccess && result.user) {
@@ -71,10 +72,11 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
       const result = await apiLogin(testUsername, testPassword);
       addDebugLog(`✅ Test login successful: ${JSON.stringify(result.user)}`);
       
-      // Call AuthContext login to update app state
+      // Call AuthContext login to update app state - WAIT for completion
       if (result.user) {
-        addDebugLog(`🔐 Updating auth context for test user...`);
-        authLogin(result.user);
+        addDebugLog(`🔐 Updating auth context for test user and waiting...`);
+        await authLogin(result.user);
+        addDebugLog(`✅ Test user auth context updated - NavBar ready`);
       }
       
       if (onLoginSuccess && result.user) {

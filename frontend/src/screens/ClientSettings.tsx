@@ -9,7 +9,11 @@ export default function ClientSettings() {
 
   useEffect(() => {
     fetchClientSettings()
-      .then((data) => setSettings(data as any[]))
+      .then((data) => {
+        // Handle paginated response
+        const settingsList = data.items || data || [];
+        setSettings(settingsList as any[]);
+      })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);

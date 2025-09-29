@@ -9,7 +9,11 @@ export default function ImportErrors() {
 
   useEffect(() => {
     fetchImportErrors()
-      .then((data) => setErrors(data as any[]))
+      .then((data) => {
+        // Handle paginated response
+        const errorsList = data.items || data || [];
+        setErrors(errorsList as any[]);
+      })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);

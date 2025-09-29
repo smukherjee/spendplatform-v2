@@ -9,7 +9,11 @@ export default function Suppliers() {
 
   useEffect(() => {
     fetchSuppliers()
-      .then((data) => setSuppliers(data as any[]))
+      .then((data) => {
+        // Handle paginated response
+        const suppliersList = data.items || data || [];
+        setSuppliers(suppliersList as any[]);
+      })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);

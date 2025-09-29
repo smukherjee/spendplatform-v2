@@ -1,70 +1,76 @@
 import React, { useEffect, useState } from 'react';
-import { fetchSettings, createSetting, deleteSetting } from '../services/apiEntities';
+import { fetchSettings } from '../services/apiEntities';
 
 export default function Settings() {
-  const [settings, setSettings] = useState<any[]>([]);
+  const [settings, setSettings] = useState<any>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [newSetting, setNewSetting] = useState<{ key: string; value: string }>({ key: '', value: '' });
 
   useEffect(() => {
     fetchSettings()
-      .then((data) => setSettings(data as any[]))
-      .catch((err) => setError(err.message))
+      .then((data) => {
+        // Backend returns an object, not an array
+        if (data && typeof data === 'object') {
+          setSettings(data);
+        } else {
+          console.warn('Settings API returned invalid data:', data);
+          setError('Invalid data format received from server');
+        }
+      })
+      .catch((err) => {
+        console.error('Settings fetch error:', err);
+        setError(err.response?.data?.detail || err.message || 'Failed to fetch settings');
+      })
       .finally(() => setLoading(false));
   }, []);
 
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const created = await createSetting(newSetting);
-      setSettings((prev) => [...prev, created]);
-      setNewSetting({ key: '', value: '' });
-    } catch (err: any) {
-      setError(err.message);
-    }
-  };
-
-  const handleDelete = async (id: string | number) => {
-    try {
-      await deleteSetting(id);
-      setSettings((prev) => prev.filter((s) => s.id !== id));
-    } catch (err: any) {
-      setError(err.message);
-    }
+  // Recursive function to render nested settings
+  const renderSettingsObject = (obj: any, path: string = ''): React.ReactElement[] => {
+    return Object.entries(obj).map(([key, value]) => {
+      const fullPath = path ? `${path}.${key}` : key;
+      
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
+        return (
+          <div key={fullPath} style={{ marginLeft: path ? '20px' : '0', marginBottom: '10px' }}>
+            <strong>{key}:</strong>
+            <div style={{ marginLeft: '10px' }}>
+              {renderSettingsObject(value, fullPath)}
+            </div>
+          </div>
+        );
+      } else {
+        return (
+          <div key={fullPath} style={{ marginLeft: path ? '20px' : '0', marginBottom: '5px' }}>
+            <span style={{ fontWeight: 'bold' }}>{key}:</span> {JSON.stringify(value)}
+          </div>
+        );
+      }
+    });
   };
 
   if (loading) return <div>Loading settings...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (error) return <div style={{ color: 'red' }}>Error: {error}</div>;
 
   return (
-    <div>
-      <h2>Settings</h2>
-      <form onSubmit={handleCreate} style={{ marginBottom: '1rem' }}>
-        <input
-          type="text"
-          placeholder="Key"
-          value={newSetting.key}
-          onChange={(e) => setNewSetting({ ...newSetting, key: e.target.value })}
-          required
-        />
-        <input
-          type="text"
-          placeholder="Value"
-          value={newSetting.value}
-          onChange={(e) => setNewSetting({ ...newSetting, value: e.target.value })}
-          required
-        />
-        <button type="submit">Add</button>
-      </form>
-      <ul>
-        {settings.map((s) => (
-          <li key={s.id}>
-            {s.key}: {s.value}
-            <button onClick={() => handleDelete(s.id)} style={{ marginLeft: '1rem' }}>Delete</button>
-          </li>
-        ))}
-      </ul>
+    <div style={{ padding: '20px' }}>
+      <h2>Application Settings</h2>
+      <div style={{ 
+        backgroundColor: '#f5f5f5', 
+        padding: '20px', 
+        borderRadius: '8px',
+        fontFamily: 'monospace',
+        lineHeight: '1.5'
+      }}>
+        {Object.keys(settings).length > 0 ? (
+          renderSettingsObject(settings)
+        ) : (
+          <div>No settings available</div>
+        )}
+      </div>
+      <div style={{ marginTop: '20px', fontSize: '14px', color: '#666' }}>
+        <p>📝 Settings are managed by system configuration and user roles.</p>
+        <p>🔧 Contact your administrator to modify system settings.</p>
+      </div>
     </div>
   );
 }

@@ -9,7 +9,11 @@ export default function Currency() {
 
   useEffect(() => {
     fetchCurrencies()
-      .then((data) => setCurrencies(data as any[]))
+      .then((data) => {
+        // Handle paginated response
+        const currenciesList = data.items || data || [];
+        setCurrencies(currenciesList as any[]);
+      })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);

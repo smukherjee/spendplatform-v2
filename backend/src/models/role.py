@@ -8,4 +8,4 @@ class Role(Base, AuditMixin):
     name = Column(String, nullable=False)
     permissions = Column(JSON, nullable=True)
     users = relationship('User', secondary='user_role', back_populates='roles')
-    # screen_permissions = relationship('RoleScreenPermission', back_populates='role', foreign_keys='RoleScreenPermission.role_id')
+    screen_permissions = relationship('RoleScreenPermission', back_populates='role', foreign_keys='RoleScreenPermission.role_id')

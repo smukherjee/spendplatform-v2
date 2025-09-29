@@ -179,7 +179,7 @@ class ComparativePerformanceTester:
                 
                 # Test async version
                 async_result = await self.test_concurrent_requests(
-                    self.async_base_url + "/api/v1", endpoint.replace('/users', '/users-async'), 
+                    self.async_base_url + "/api/v1", endpoint, 
                     scenario['users'], scenario['requests'], 
                     async_token
                 )

@@ -9,7 +9,11 @@ export default function Clients() {
 
   useEffect(() => {
     fetchClients()
-      .then((data) => setClients(data as any[]))
+      .then((data) => {
+        // Handle paginated response
+        const clientsList = data.items || data || [];
+        setClients(clientsList as any[]);
+      })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);

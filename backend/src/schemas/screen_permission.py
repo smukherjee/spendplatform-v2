@@ -46,3 +46,20 @@ class PermissionCheckResponse(BaseModel):
     has_access: bool
     source: str  # "role", "user_override", "denied"
     message: Optional[str] = None
+
+
+class ScreenPermissionUpdate(BaseModel):
+    screen_id: int
+    can_view: bool = False
+    can_create: bool = False
+    can_edit: bool = False
+    can_delete: bool = False
+    can_export: bool = False
+    can_import: bool = False
+    allow_full_access: bool = False
+    deny_access: bool = False
+
+
+class RolePermissionsMatrixUpdate(BaseModel):
+    client_id: Optional[int] = None
+    screens: List[ScreenPermissionUpdate]

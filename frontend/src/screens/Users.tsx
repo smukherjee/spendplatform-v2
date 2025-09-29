@@ -190,7 +190,11 @@ export default function Users() {
       const data = await fetchUsers();
       console.log('✅ API Response received:', data);
       
-      if (!data) {
+      // Handle paginated response - extract items array
+      const usersList = data.items || data || [];
+      console.log('📊 Extracted users list:', usersList);
+      
+      if (!usersList) {
         console.warn('� No data received from API');
         setUsers([]);
         setTotalRecords(0);
@@ -203,7 +207,7 @@ export default function Users() {
         return;
       }
       
-      if (!Array.isArray(data)) {
+      if (!Array.isArray(usersList)) {
         console.error('� API returned non-array data:', typeof data, data);
         setUsers([]);
         setTotalRecords(0);
@@ -216,11 +220,11 @@ export default function Users() {
         return;
       }
       
-      console.log('� Setting API data:', data.length, 'users');
-      console.log('🔍 Raw API data:', data);
+      console.log('� Setting API data:', usersList.length, 'users');
+      console.log('🔍 Raw API data:', usersList);
       
       // Process users based on known API schema
-      const processedUsers = data.map((user: any, index: number) => {
+      const processedUsers = usersList.map((user: any, index: number) => {
         console.log(`👤 Raw user ${index + 1}:`, user);
         
         // Find client name from clients array
@@ -244,7 +248,8 @@ export default function Users() {
       console.log('✅ Final processed users:', processedUsers);
       
       setUsers(processedUsers as User[]);
-      setTotalRecords(processedUsers.length);
+      // Use total from paginated response if available, otherwise use processed length
+      setTotalRecords(data.total !== undefined ? data.total : processedUsers.length);
       setLastFetchTime(now);
       
       // Performance logging

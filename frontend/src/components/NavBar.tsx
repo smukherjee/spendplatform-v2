@@ -57,6 +57,17 @@ const NavBar = React.memo(() => {
   
   const { permissions, loading } = useMultiplePermissions(screens, userKey);
 
+  // Debug permission loading state
+  console.log('🔄 NavBar permission state:', {
+    loading,
+    userKey,
+    screensCount: screens.length,
+    permissionsCount: permissions.size,
+    userRole: user?.role,
+    screens: screens,
+    permissionEntries: Array.from(permissions.entries())
+  });
+
   // Memoize logout handler to prevent recreation
   const handleLogout = useCallback(() => {
     logout();
@@ -65,30 +76,87 @@ const NavBar = React.memo(() => {
 
   // Memoize access check function
   const hasAccess = useCallback((screen: string) => {
-    // If permissions are still loading, show only essential navigation based on role
+    console.log(`🔍 hasAccess(${screen}):`, {
+      loading,
+      userRole: user?.role,
+      permissionsSize: permissions.size,
+      permissionValue: permissions.get(screen),
+      allPermissions: Array.from(permissions.entries())
+    });
+    
     if (loading) {
-      // Always show dashboard - accessible to all authenticated users
-      if (screen === '/dashboard') return true;
+      console.log(`⏳ Loading state - using fallback for ${screen}`);
+      // Fallback logic during loading - show essential screens based on role
+      if (screen === '/dashboard') {
+        console.log(`✅ Dashboard allowed (basic fallback)`);
+        return true;
+      }
+      if (screen === '/invoices' || screen === '/suppliers') {
+        console.log(`✅ ${screen} allowed (basic fallback)`);
+        return true;
+      }
       
-      // Show basic screens for all roles
-      if (screen === '/invoices' || screen === '/suppliers') return true;
-      
-      // Show admin screens only for admin roles
       if (user?.role === 'superadmin') {
-        return ['/clients', '/roles', '/users', '/screen-permissions', '/settings'].includes(screen);
+        // FIXED: Superadmin has access to everything during loading
+        console.log(`👑 Superadmin ${screen} - ALLOWED (fallback)`);
+        return true;
       }
       
       if (user?.role === 'client_admin') {
-        return ['/users', '/roles', '/client-settings', '/reporting'].includes(screen);
+        const allowed = ['/users', '/roles', '/client-settings', '/reporting', '/business-units', '/regions', '/currency', '/unit-of-measure'].includes(screen);
+        console.log(`👤 Client admin ${screen} - ${allowed ? 'ALLOWED' : 'DENIED'} (fallback)`);
+        return allowed;
       }
       
-      // For regular users, show limited access
+      // For regular users, show basic screens
+      console.log(`❌ Regular user ${screen} - DENIED (fallback)`);
       return false;
     }
     
-    // Use actual permissions when loaded
-    return permissions.get(screen) === true;
+    const hasPermission = permissions.get(screen) === true;
+    console.log(`🔐 API permission for ${screen}: ${hasPermission}`);
+    
+    // FALLBACK: If permissions are empty (API calls failed), use role-based fallback
+    if (permissions.size === 0) {
+      console.log(`⚠️ No permissions loaded, using emergency fallback for ${screen}`);
+      if (user?.role === 'superadmin') {
+        console.log(`👑 Emergency superadmin fallback - ALLOWED for ${screen}`);
+        return true;
+      }
+      if (screen === '/dashboard') {
+        console.log(`🏠 Emergency dashboard fallback - ALLOWED`);
+        return true;
+      }
+      console.log(`❌ Emergency fallback - DENIED for ${screen}`);
+      return false;
+    }
+    
+    return hasPermission;
   }, [loading, permissions, user?.role]);
+
+  // Memoize navigation items to prevent recreation
+  const navigationItems = useMemo(() => {
+    const items = [
+      { path: '/dashboard', label: 'Dashboard' },
+      { path: '/invoices', label: 'Invoices' },
+      { path: '/suppliers', label: 'Suppliers' },
+      { path: '/business-units', label: 'Business Units' },
+      { path: '/regions', label: 'Regions' },
+      { path: '/roles', label: 'Roles' },
+      { path: '/users', label: 'Users' },
+      { path: '/clients', label: 'Clients' },
+      { path: '/subcategories', label: 'Subcategories' },
+      { path: '/unit-of-measure', label: 'Unit of Measure' },
+      { path: '/currency', label: 'Currency' },
+      { path: '/import-errors', label: 'Import Errors' },
+      { path: '/reporting', label: 'Reporting' },
+      { path: '/client-settings', label: 'Client Settings' },
+      { path: '/settings', label: 'Settings' },
+      { path: '/screen-permissions', label: 'Screen Permissions' }
+    ];
+
+    return items.filter(item => hasAccess(item.path));
+  }, [hasAccess]);
 
   return (
     <nav style={{ 
@@ -101,174 +169,40 @@ const NavBar = React.memo(() => {
     }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem' }}>
         {loading && (
-          <span style={{ color: '#666', fontSize: '0.8rem', marginRight: '1rem' }}>
-            Loading menu...
+          <span style={{ color: '#ff6600', fontSize: '0.8rem', marginRight: '1rem', background: '#fff3e0', padding: '2px 6px', borderRadius: '3px' }}>
+            🔄 Loading permissions... ({navigationItems.length} items visible)
           </span>
         )}
-
-        {/* Core Operations */}
-        {hasAccess('/dashboard') && (
-          <>
-            <Link to="/dashboard" style={{ fontWeight: 'bold' }}>Dashboard</Link>
-            <span style={{ color: '#ccc' }}>|</span>
-          </>
+        
+        {!loading && (
+          <span style={{ color: '#009900', fontSize: '0.8rem', marginRight: '1rem', background: '#e8f5e8', padding: '2px 6px', borderRadius: '3px' }}>
+            ✅ Permissions loaded ({navigationItems.length} items)
+          </span>
         )}
         
-        {hasAccess('/invoices') && (
-          <>
-            <Link to="/invoices">Invoices</Link>
-            <span style={{ color: '#ccc' }}>|</span>
-          </>
-        )}
-        
-        {hasAccess('/suppliers') && (
-          <>
-            <Link to="/suppliers">Suppliers</Link>
-            <span style={{ color: '#ccc' }}>|</span>
-          </>
-        )}
-
-        {/* Organization & Structure */}
-        {(hasAccess('/business-units') || hasAccess('/regions')) && (
-          <>
-            {hasAccess('/business-units') && (
-              <>
-                <Link to="/business-units">Business Units</Link>
-                <span style={{ color: '#ccc' }}>|</span>
-              </>
-            )}
-            
-            {hasAccess('/regions') && (
-              <>
-                <Link to="/regions">Regions</Link>
-                <span style={{ color: '#ccc' }}>|</span>
-              </>
-            )}
-          </>
-        )}
-
-        {/* Master Data */}
-        {(hasAccess('/subcategories') || hasAccess('/unit-of-measure') || hasAccess('/currency')) && (
-          <>
-            {hasAccess('/subcategories') && (
-              <>
-                <Link to="/subcategories">Categories</Link>
-                <span style={{ color: '#ccc' }}>|</span>
-              </>
-            )}
-            
-            {hasAccess('/unit-of-measure') && (
-              <>
-                <Link to="/unit-of-measure">Units</Link>
-                <span style={{ color: '#ccc' }}>|</span>
-              </>
-            )}
-            
-            {hasAccess('/currency') && (
-              <>
-                <Link to="/currency">Currency</Link>
-                <span style={{ color: '#ccc' }}>|</span>
-              </>
-            )}
-          </>
-        )}
-
-        {/* User & Access Management */}
-        {(hasAccess('/users') || hasAccess('/roles') || hasAccess('/clients')) && (
-          <>
-            {hasAccess('/users') && (
-              <>
-                <Link to="/users">Users</Link>
-                <span style={{ color: '#ccc' }}>|</span>
-              </>
-            )}
-            
-            {hasAccess('/roles') && (
-              <>
-                <Link to="/roles">Roles</Link>
-                <span style={{ color: '#ccc' }}>|</span>
-              </>
-            )}
-            
-            {hasAccess('/clients') && (
-              <>
-                <Link to="/clients">Clients</Link>
-                <span style={{ color: '#ccc' }}>|</span>
-              </>
-            )}
-          </>
-        )}
-
-        {/* Reports & Analytics */}
-        {hasAccess('/reporting') && (
-          <>
-            <Link to="/reporting">Reports</Link>
-            <span style={{ color: '#ccc' }}>|</span>
-          </>
-        )}
-
-        {/* System & Admin */}
-        {(hasAccess('/import-errors') || hasAccess('/client-settings') || hasAccess('/settings') || hasAccess('/screen-permissions')) && (
-          <>
-            {hasAccess('/import-errors') && (
-              <>
-                <Link to="/import-errors">Import Errors</Link>
-                <span style={{ color: '#ccc' }}>|</span>
-              </>
-            )}
-            
-            {hasAccess('/client-settings') && (
-              <>
-                <Link to="/client-settings">Client Settings</Link>
-                <span style={{ color: '#ccc' }}>|</span>
-              </>
-            )}
-            
-            {hasAccess('/settings') && (
-              <>
-                <Link to="/settings">Settings</Link>
-                <span style={{ color: '#ccc' }}>|</span>
-              </>
-            )}
-            
-            {hasAccess('/screen-permissions') && (
-              <Link to="/screen-permissions">Permissions</Link>
-            )}
-          </>
-        )}
+        {navigationItems.map(({ path, label }) => (
+          <NavLink key={path} to={path}>
+            {label}
+          </NavLink>
+        ))}
       </div>
       
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
         {user && (
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '0.9rem', color: '#333' }}>
-              {user.username}
-            </div>
-            <div style={{ 
-              fontSize: '0.75rem', 
-              color: user.role === 'superadmin' ? '#e74c3c' : 
-                     user.role === 'client_admin' ? '#f39c12' : '#2ecc71',
-              fontWeight: 'bold'
-            }}>
-              {user.role.replace('_', ' ').toUpperCase()}
-              {loading && ' (Loading...)'}
-            </div>
-          </div>
+          <span style={{ color: '#666', fontSize: '0.9rem' }}>
+            {user.username} ({user.role})
+          </span>
         )}
-        <button 
+        <button
           onClick={handleLogout}
           style={{
             padding: '0.5rem 1rem',
-            backgroundColor: '#dc3545',
+            background: '#dc3545',
             color: 'white',
             border: 'none',
             borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '0.9rem',
-            transition: 'background-color 0.2s'
+            cursor: 'pointer'
           }}
-          onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#c82333'}
-          onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#dc3545'}
         >
           Logout
         </button>

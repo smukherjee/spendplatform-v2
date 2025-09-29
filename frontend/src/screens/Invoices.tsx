@@ -9,7 +9,11 @@ export default function Invoices() {
 
   useEffect(() => {
     fetchInvoices()
-      .then((data) => setInvoices(data as any[]))
+      .then((data) => {
+        // Handle paginated response
+        const invoicesList = data.items || data || [];
+        setInvoices(invoicesList as any[]);
+      })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);

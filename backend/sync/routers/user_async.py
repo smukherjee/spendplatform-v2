@@ -18,7 +18,7 @@ from schemas_optimized import UserReadOptimized, PaginatedUserResponse
 from utils import get_current_role, enforce_role, get_client_id
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/users-async", tags=["User-Async"])
+router = APIRouter(prefix="/users", tags=["Users"])
 
 @router.get("/", response_model=PaginatedUserResponse)
 async def get_users_optimized(

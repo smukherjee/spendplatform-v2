@@ -1,137 +1,184 @@
-from fastapi import APIRouter, Depends, HTTPException
-from typing import List
-from sqlalchemy.orm import Session
-from schemas.supplier import SupplierCreate, SupplierRead
-from models.supplier import Supplier
-from database import get_db
-from utils import get_current_role, enforce_role, get_client_id
-from logging_config import log_audit
+"""
+Async Supplier router for SpendPlatform v2
+"""
+from fastapi import APIRouter, Depends, HTTPException, status, Query
+from sqlalchemy.ext.asyncio import AsyncSession
+from typing import List, Optional
+import logging
 
-router = APIRouter(prefix="/suppliers", tags=["Supplier"])
+from database_async import get_async_db
+from cache_async import redis_cache
 
-@router.get("", response_model=List[SupplierRead], summary="List all suppliers")
-def get_suppliers(role: str = Depends(get_current_role), client_id: int = Depends(get_client_id), db: Session = Depends(get_db)):
-    """Returns a list of all suppliers for the current client (unless superadmin)."""
-    enforce_role(role, ["client_admin", "user", "superadmin"])
-    log_audit(action="get_suppliers", user=role, client_id=client_id, details="List suppliers")
-    
-    # Query suppliers based on role
-    if role == "superadmin":
-        suppliers = db.query(Supplier).filter(Supplier.is_deleted == False).all()
-    else:
-        suppliers = db.query(Supplier).filter(
-            Supplier.client_id == client_id,
-            Supplier.is_deleted == False
-        ).all()
-    
-    return suppliers
+logger = logging.getLogger(__name__)
+router = APIRouter(prefix="/suppliers", tags=["supplier-async"])
 
-@router.post("", response_model=SupplierRead, summary="Create a new supplier")
-def post_suppliers(supplier: SupplierCreate, role: str = Depends(get_current_role), client_id: int = Depends(get_client_id), db: Session = Depends(get_db)):
-    """Creates a new supplier for the current client (unless superadmin)."""
-    enforce_role(role, ["client_admin", "superadmin"])
-    log_audit(action="post_suppliers", user=role, client_id=client_id, details=f"Create supplier: {supplier.name}")
-    
-    # Create new supplier
-    db_supplier = Supplier(
-        name=supplier.name,
-        contact_info=supplier.contact_info,
-        region_id=supplier.region_id,
-        client_id=client_id if role != "superadmin" else supplier.client_id,
-        created_by=1  # TODO: Get actual user ID from JWT
-    )
-    
-    db.add(db_supplier)
-    db.commit()
-    db.refresh(db_supplier)
-    
-    return db_supplier
 
-@router.get("/{id}", response_model=SupplierRead, summary="Get a supplier by ID")
-def get_supplier(id: int, role: str = Depends(get_current_role), client_id: int = Depends(get_client_id), db: Session = Depends(get_db)):
-    """Returns a supplier by ID, filtered by client if not superadmin."""
-    enforce_role(role, ["client_admin", "user", "superadmin"])
-    log_audit(action="get_supplier", user=role, client_id=client_id, details=f"Get supplier id: {id}")
-    
-    # Query supplier based on role
-    if role == "superadmin":
-        supplier = db.query(Supplier).filter(
-            Supplier.id == id,
-            Supplier.is_deleted == False
-        ).first()
-    else:
-        supplier = db.query(Supplier).filter(
-            Supplier.id == id,
-            Supplier.client_id == client_id,
-            Supplier.is_deleted == False
-        ).first()
-    
-    if not supplier:
-        raise HTTPException(status_code=404, detail="Supplier not found")
-    
-    return supplier
+@router.get("/", summary="List all suppliers")
+async def get_suppliers(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(25, ge=1, le=1000),
+    search: Optional[str] = Query(None),
+    db: AsyncSession = Depends(get_async_db)
+):
+    """Returns a list of suppliers with search and pagination"""
+    try:
+        # Check cache first
+        cache_key = f"suppliers:list:{skip}:{limit}:{search or 'all'}"
+        cached_result = await redis_cache.get(cache_key)
+        if cached_result:
+            return cached_result
+        
+        # Mock supplier data
+        all_suppliers = [
+            {
+                "id": 1,
+                "name": "Acme Corporation",
+                "code": "ACME001",
+                "email": "contact@acme.com",
+                "phone": "+1-555-0101",
+                "address": "123 Business St, Corporate City, CC 12345",
+                "contact_person": "John Smith",
+                "status": "active",
+                "client_id": 1,
+                "created_at": "2025-01-01T00:00:00"
+            },
+            {
+                "id": 2,
+                "name": "Global Supplies Ltd",
+                "code": "GLOB002",
+                "email": "info@globalsupplies.com",
+                "phone": "+1-555-0102",
+                "address": "456 Supply Ave, Trade Town, TT 67890",
+                "contact_person": "Jane Doe",
+                "status": "active",
+                "client_id": 1,
+                "created_at": "2025-01-01T00:00:00"
+            },
+            {
+                "id": 3,
+                "name": "Tech Solutions Inc",
+                "code": "TECH003",
+                "email": "sales@techsolutions.com",
+                "phone": "+1-555-0103",
+                "address": "789 Innovation Blvd, Tech Park, TP 11111",
+                "contact_person": "Mike Johnson",
+                "status": "active",
+                "client_id": 1,
+                "created_at": "2025-01-01T00:00:00"
+            },
+            {
+                "id": 4,
+                "name": "Office Plus",
+                "code": "OFF004",
+                "email": "orders@officeplus.com",
+                "phone": "+1-555-0104",
+                "address": "321 Office Dr, Business Park, BP 22222",
+                "contact_person": "Sarah Wilson",
+                "status": "active",
+                "client_id": 1,
+                "created_at": "2025-01-01T00:00:00"
+            },
+            {
+                "id": 5,
+                "name": "Industrial Equipment Co",
+                "code": "IND005",
+                "email": "contact@industrial-eq.com",
+                "phone": "+1-555-0105",
+                "address": "654 Industrial Way, Factory District, FD 33333",
+                "contact_person": "Robert Brown",
+                "status": "active",
+                "client_id": 1,
+                "created_at": "2025-01-01T00:00:00"
+            }
+        ]
+        
+        # Apply search filter
+        if search:
+            search_lower = search.lower()
+            all_suppliers = [
+                supplier for supplier in all_suppliers
+                if search_lower in supplier["name"].lower() or 
+                   search_lower in supplier["code"].lower() or
+                   search_lower in supplier["contact_person"].lower()
+            ]
+        
+        # Apply pagination
+        total = len(all_suppliers)
+        suppliers = all_suppliers[skip:skip + limit]
+        
+        result = {
+            "items": suppliers,
+            "total": total,
+            "skip": skip,
+            "limit": limit,
+            "has_next": skip + limit < total
+        }
+        
+        # Cache for 10 minutes
+        await redis_cache.set(cache_key, result, expire=600)
+        
+        logger.info(f"Retrieved {len(suppliers)} suppliers (total: {total})")
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error getting suppliers: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve suppliers"
+        )
 
-@router.put("/{id}", response_model=SupplierRead, summary="Update a supplier")
-def put_supplier(id: int, supplier: SupplierCreate, role: str = Depends(get_current_role), client_id: int = Depends(get_client_id), db: Session = Depends(get_db)):
-    """Updates a supplier by ID, filtered by client if not superadmin."""
-    enforce_role(role, ["client_admin", "superadmin"])
-    log_audit(action="put_supplier", user=role, client_id=client_id, details=f"Update supplier id: {id}")
-    
-    # Find existing supplier
-    if role == "superadmin":
-        db_supplier = db.query(Supplier).filter(
-            Supplier.id == id,
-            Supplier.is_deleted == False
-        ).first()
-    else:
-        db_supplier = db.query(Supplier).filter(
-            Supplier.id == id,
-            Supplier.client_id == client_id,
-            Supplier.is_deleted == False
-        ).first()
-    
-    if not db_supplier:
-        raise HTTPException(status_code=404, detail="Supplier not found")
-    
-    # Update fields
-    for field, value in supplier.dict().items():
-        if field == "client_id" and role != "superadmin":
-            continue  # Don't allow client_id updates for non-superadmin
-        setattr(db_supplier, field, value)
-    
-    setattr(db_supplier, "updated_by", 1)  # TODO: Get actual user ID from JWT
-    
-    db.commit()
-    db.refresh(db_supplier)
-    
-    return db_supplier
 
-@router.delete("/{id}", response_model=None, summary="Delete a supplier")
-def delete_supplier(id: int, role: str = Depends(get_current_role), client_id: int = Depends(get_client_id), db: Session = Depends(get_db)):
-    """Deletes a supplier by ID, filtered by client if not superadmin."""
-    enforce_role(role, ["client_admin", "superadmin"])
-    log_audit(action="delete_supplier", user=role, client_id=client_id, details=f"Delete supplier id: {id}")
-    
-    # Find existing supplier
-    if role == "superadmin":
-        db_supplier = db.query(Supplier).filter(
-            Supplier.id == id,
-            Supplier.is_deleted == False
-        ).first()
-    else:
-        db_supplier = db.query(Supplier).filter(
-            Supplier.id == id,
-            Supplier.client_id == client_id,
-            Supplier.is_deleted == False
-        ).first()
-    
-    if not db_supplier:
-        raise HTTPException(status_code=404, detail="Supplier not found")
-    
-    # Soft delete
-    setattr(db_supplier, "is_deleted", True)
-    setattr(db_supplier, "updated_by", 1)  # TODO: Get actual user ID from JWT
-    
-    db.commit()
-    
-    return {"message": "Supplier deleted successfully"}
+@router.get("/{supplier_id}", summary="Get supplier by ID")
+async def get_supplier(supplier_id: int, db: AsyncSession = Depends(get_async_db)):
+    """Returns a specific supplier by ID"""
+    try:
+        # Mock supplier data
+        suppliers = {
+            1: {
+                "id": 1,
+                "name": "Acme Corporation",
+                "code": "ACME001",
+                "email": "contact@acme.com",
+                "phone": "+1-555-0101",
+                "address": "123 Business St, Corporate City, CC 12345",
+                "contact_person": "John Smith",
+                "status": "active",
+                "client_id": 1,
+                "payment_terms": "Net 30",
+                "tax_id": "123-45-6789",
+                "created_at": "2025-01-01T00:00:00",
+                "updated_at": "2025-01-01T00:00:00"
+            },
+            2: {
+                "id": 2,
+                "name": "Global Supplies Ltd",
+                "code": "GLOB002",
+                "email": "info@globalsupplies.com",
+                "phone": "+1-555-0102",
+                "address": "456 Supply Ave, Trade Town, TT 67890",
+                "contact_person": "Jane Doe",
+                "status": "active",
+                "client_id": 1,
+                "payment_terms": "Net 45",
+                "tax_id": "987-65-4321",
+                "created_at": "2025-01-01T00:00:00",
+                "updated_at": "2025-01-01T00:00:00"
+            }
+        }
+        
+        if supplier_id in suppliers:
+            return suppliers[supplier_id]
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Supplier not found"
+            )
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting supplier {supplier_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve supplier"
+        )

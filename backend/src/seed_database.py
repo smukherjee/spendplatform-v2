@@ -3,6 +3,7 @@ Database seeder for creating test data according to the constitution and data mo
 Creates multi-tenant data with proper RBAC, audit trails, and all required entities.
 """
 
+import os
 from sqlalchemy.orm import Session
 from database import SessionLocal, engine
 from models.base import Base
@@ -108,15 +109,39 @@ def seed_database():
             User(id=8, username="tech_user1", email="user1@tech.com", client_id=3)
         ]
         
-        # Set passwords
-        users[0].set_password("superadmin123")  # superadmin
-        users[1].set_password("admin123")      # acme_admin
-        users[2].set_password("user123")       # acme_user1
-        users[3].set_password("user123")       # acme_user2
-        users[4].set_password("admin123")      # global_admin
-        users[5].set_password("user123")       # global_user1
-        users[6].set_password("admin123")      # tech_admin
-        users[7].set_password("user123")       # tech_user1
+        # Set passwords from environment variables (with fallbacks for development)
+        environment = os.getenv('ENVIRONMENT', 'development')
+        
+        if environment == 'production':
+            # In production, require environment variables for all passwords
+            superadmin_password = os.getenv('SEED_SUPERADMIN_PASSWORD')
+            admin_password = os.getenv('SEED_ADMIN_PASSWORD')
+            user_password = os.getenv('SEED_USER_PASSWORD')
+            
+            if not all([superadmin_password, admin_password, user_password]):
+                raise ValueError(
+                    "Production environment requires SEED_SUPERADMIN_PASSWORD, "
+                    "SEED_ADMIN_PASSWORD, and SEED_USER_PASSWORD environment variables"
+                )
+        else:
+            # Development fallbacks
+            superadmin_password = os.getenv('SEED_SUPERADMIN_PASSWORD', 'Dev_SuperAdmin_2024!')
+            admin_password = os.getenv('SEED_ADMIN_PASSWORD', 'Dev_Admin_2024!')
+            user_password = os.getenv('SEED_USER_PASSWORD', 'Dev_User_2024!')
+            
+        # Ensure passwords are strings (should never be None due to fallbacks or validation above)
+        assert superadmin_password is not None, "Superadmin password cannot be None"
+        assert admin_password is not None, "Admin password cannot be None"  
+        assert user_password is not None, "User password cannot be None"
+        
+        users[0].set_password(superadmin_password)  # superadmin
+        users[1].set_password(admin_password)       # acme_admin
+        users[2].set_password(user_password)        # acme_user1
+        users[3].set_password(user_password)        # acme_user2
+        users[4].set_password(admin_password)       # global_admin
+        users[5].set_password(user_password)        # global_user1
+        users[6].set_password(admin_password)       # tech_admin
+        users[7].set_password(user_password)        # tech_user1
         
         for user in users:
             db.add(user)
@@ -374,12 +399,19 @@ def seed_database():
         logger.info("✅ Created invoice items")
         
         logger.info("🎉 Database seeding completed successfully!")
-        logger.info("Test users created:")
-        logger.info("  - superadmin / superadmin123 (superadmin role)")
-        logger.info("  - acme_admin / admin123 (client_admin role)")
-        logger.info("  - acme_user1 / user123 (user role)")
-        logger.info("  - global_admin / admin123 (client_admin role)")
-        logger.info("  - tech_admin / admin123 (client_admin role)")
+        logger.info("Test users created with environment-configured passwords:")
+        if environment == 'production':
+            logger.info("  - superadmin (superadmin role) - password from SEED_SUPERADMIN_PASSWORD")
+            logger.info("  - acme_admin (client_admin role) - password from SEED_ADMIN_PASSWORD")
+            logger.info("  - acme_user1 (user role) - password from SEED_USER_PASSWORD")
+            logger.info("  - global_admin (client_admin role) - password from SEED_ADMIN_PASSWORD")
+            logger.info("  - tech_admin (client_admin role) - password from SEED_ADMIN_PASSWORD")
+        else:
+            logger.info("  - superadmin (superadmin role) - using development default password")
+            logger.info("  - acme_admin (client_admin role) - using development default password")
+            logger.info("  - acme_user1 (user role) - using development default password")
+            logger.info("  - global_admin (client_admin role) - using development default password")
+            logger.info("  - tech_admin (client_admin role) - using development default password")
         
     except Exception as e:
         logger.error(f"Error during seeding: {e}")

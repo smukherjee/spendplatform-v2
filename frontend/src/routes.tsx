@@ -86,13 +86,15 @@ export default function AppRoutes() {
             } 
           />
       
-      {/* Protected routes */}
+      {/* Landing route: send authenticated users to dashboard, guests to login */}
       <Route 
         path="/" 
         element={
-          <ProtectedRoute>
+          isAuthenticated ? (
             <Navigate to="/dashboard" replace />
-          </ProtectedRoute>
+          ) : (
+            <Navigate to="/login" replace />
+          )
         } 
       />
       
@@ -135,7 +137,7 @@ export default function AppRoutes() {
       <Route 
         path="/suppliers" 
         element={
-          <ProtectedRoute>
+          <ProtectedRoute screenRoute="/suppliers">
             <Suppliers />
           </ProtectedRoute>
         } 
@@ -143,7 +145,7 @@ export default function AppRoutes() {
       <Route 
         path="/suppliers/:id" 
         element={
-          <ProtectedRoute>
+          <ProtectedRoute screenRoute="/suppliers">
             <SupplierDetail />
           </ProtectedRoute>
         } 
@@ -151,7 +153,7 @@ export default function AppRoutes() {
       <Route 
         path="/suppliers/:id/edit" 
         element={
-          <ProtectedRoute>
+          <ProtectedRoute screenRoute="/suppliers">
             <SupplierEdit />
           </ProtectedRoute>
         } 
@@ -161,7 +163,7 @@ export default function AppRoutes() {
       <Route 
         path="/business-units" 
         element={
-          <ProtectedRoute>
+          <ProtectedRoute screenRoute="/business-units">
             <BusinessUnits />
           </ProtectedRoute>
         } 
@@ -169,7 +171,7 @@ export default function AppRoutes() {
       <Route 
         path="/business-units/:id" 
         element={
-          <ProtectedRoute>
+          <ProtectedRoute screenRoute="/business-units">
             <BusinessUnitDetail />
           </ProtectedRoute>
         } 
@@ -177,7 +179,7 @@ export default function AppRoutes() {
       <Route 
         path="/business-units/:id/edit" 
         element={
-          <ProtectedRoute>
+          <ProtectedRoute screenRoute="/business-units">
             <BusinessUnitEdit />
           </ProtectedRoute>
         } 
@@ -187,7 +189,7 @@ export default function AppRoutes() {
       <Route 
         path="/regions" 
         element={
-          <ProtectedRoute>
+          <ProtectedRoute screenRoute="/regions">
             <Regions />
           </ProtectedRoute>
         } 
@@ -195,7 +197,7 @@ export default function AppRoutes() {
       <Route 
         path="/regions/:id" 
         element={
-          <ProtectedRoute>
+          <ProtectedRoute screenRoute="/regions">
             <RegionDetail />
           </ProtectedRoute>
         } 
@@ -203,7 +205,7 @@ export default function AppRoutes() {
       <Route 
         path="/regions/:id/edit" 
         element={
-          <ProtectedRoute>
+          <ProtectedRoute screenRoute="/regions">
             <RegionEdit />
           </ProtectedRoute>
         } 
@@ -229,7 +231,7 @@ export default function AppRoutes() {
       <Route 
         path="/roles/:id/edit" 
         element={
-          <ProtectedRoute requiredRoles={['client_admin', 'superadmin']}>
+          <ProtectedRoute screenRoute="/roles">
             <RoleEdit />
           </ProtectedRoute>
         } 
@@ -264,7 +266,7 @@ export default function AppRoutes() {
       <Route 
         path="/clients" 
         element={
-          <ProtectedRoute requiredRoles={['superadmin']}>
+          <ProtectedRoute screenRoute="/clients">
             <Clients />
           </ProtectedRoute>
         } 
@@ -272,7 +274,7 @@ export default function AppRoutes() {
       <Route 
         path="/clients/:id" 
         element={
-          <ProtectedRoute requiredRoles={['superadmin']}>
+          <ProtectedRoute screenRoute="/clients">
             <ClientDetail />
           </ProtectedRoute>
         } 
@@ -280,7 +282,7 @@ export default function AppRoutes() {
       <Route 
         path="/clients/:id/edit" 
         element={
-          <ProtectedRoute requiredRoles={['superadmin']}>
+          <ProtectedRoute screenRoute="/clients">
             <ClientEdit />
           </ProtectedRoute>
         } 
@@ -290,7 +292,7 @@ export default function AppRoutes() {
       <Route 
         path="/subcategories" 
         element={
-          <ProtectedRoute>
+          <ProtectedRoute screenRoute="/subcategories">
             <Subcategories />
           </ProtectedRoute>
         } 
@@ -298,7 +300,7 @@ export default function AppRoutes() {
       <Route 
         path="/subcategories/:id" 
         element={
-          <ProtectedRoute>
+          <ProtectedRoute screenRoute="/subcategories">
             <SubcategoryDetail />
           </ProtectedRoute>
         } 
@@ -306,7 +308,7 @@ export default function AppRoutes() {
       <Route 
         path="/subcategories/:id/edit" 
         element={
-          <ProtectedRoute>
+          <ProtectedRoute screenRoute="/subcategories">
             <SubcategoryEdit />
           </ProtectedRoute>
         } 
@@ -315,7 +317,7 @@ export default function AppRoutes() {
       <Route 
         path="/unit-of-measure" 
         element={
-          <ProtectedRoute>
+          <ProtectedRoute screenRoute="/unit-of-measure">
             <UnitOfMeasure />
           </ProtectedRoute>
         } 
@@ -323,7 +325,7 @@ export default function AppRoutes() {
       <Route 
         path="/unit-of-measure/:id" 
         element={
-          <ProtectedRoute>
+          <ProtectedRoute screenRoute="/unit-of-measure">
             <UnitOfMeasureDetail />
           </ProtectedRoute>
         } 
@@ -331,7 +333,7 @@ export default function AppRoutes() {
       <Route 
         path="/unit-of-measure/:id/edit" 
         element={
-          <ProtectedRoute>
+          <ProtectedRoute screenRoute="/unit-of-measure">
             <UnitOfMeasureEdit />
           </ProtectedRoute>
         } 
@@ -340,7 +342,7 @@ export default function AppRoutes() {
       <Route 
         path="/currency" 
         element={
-          <ProtectedRoute>
+          <ProtectedRoute screenRoute="/currency">
             <Currency />
           </ProtectedRoute>
         } 
@@ -348,7 +350,7 @@ export default function AppRoutes() {
       <Route 
         path="/currency/:id" 
         element={
-          <ProtectedRoute>
+          <ProtectedRoute screenRoute="/currency">
             <CurrencyDetail />
           </ProtectedRoute>
         } 
@@ -356,7 +358,7 @@ export default function AppRoutes() {
       <Route 
         path="/currency/:id/edit" 
         element={
-          <ProtectedRoute>
+          <ProtectedRoute screenRoute="/currency">
             <CurrencyEdit />
           </ProtectedRoute>
         } 
@@ -365,7 +367,7 @@ export default function AppRoutes() {
       <Route 
         path="/import-errors" 
         element={
-          <ProtectedRoute>
+          <ProtectedRoute screenRoute="/import-errors">
             <ImportErrors />
           </ProtectedRoute>
         } 
@@ -374,7 +376,7 @@ export default function AppRoutes() {
       <Route 
         path="/reporting" 
         element={
-          <ProtectedRoute>
+          <ProtectedRoute screenRoute="/reporting">
             <Reporting />
           </ProtectedRoute>
         } 
@@ -383,7 +385,7 @@ export default function AppRoutes() {
       <Route 
         path="/client-settings" 
         element={
-          <ProtectedRoute requiredRoles={['client_admin', 'superadmin']}>
+          <ProtectedRoute screenRoute="/client-settings">
             <ClientSettings />
           </ProtectedRoute>
         } 
@@ -392,7 +394,7 @@ export default function AppRoutes() {
       <Route 
         path="/settings" 
         element={
-          <ProtectedRoute>
+          <ProtectedRoute screenRoute="/settings">
             <Settings />
           </ProtectedRoute>
         } 
